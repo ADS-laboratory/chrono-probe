@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 plotters = "0.3.4"
-rand_distr = "0.4.3"
 rand = "0.8.5"

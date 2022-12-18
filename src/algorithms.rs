@@ -1,4 +1,24 @@
-pub fn period_naive1(s: &[u8]) -> usize {
+pub struct Algorithm {
+    pub name: &'static str,
+    pub function: fn(&[u8]) -> usize,
+}
+
+pub const PERIOD_NAIVE1: Algorithm = Algorithm {
+    name: "period naive1",
+    function: period_naive1,
+};
+
+pub const PERIOD_NAIVE2: Algorithm = Algorithm {
+    name: "period naive2",
+    function: period_naive2,
+};
+
+pub const PERIOD_SMART: Algorithm = Algorithm {
+    name: "period smart",
+    function: period_smart,
+};
+
+fn period_naive1(s: &[u8]) -> usize {
     let n = s.len();
 
     'outer: for i in 1..n {
@@ -12,7 +32,7 @@ pub fn period_naive1(s: &[u8]) -> usize {
     n
 }
 
-pub fn period_naive2(s: &[u8]) -> usize {
+fn period_naive2(s: &[u8]) -> usize {
     let n = s.len();
     for i in 1..n {
         if s[..n - i] == s[i..] {
@@ -22,7 +42,7 @@ pub fn period_naive2(s: &[u8]) -> usize {
     n
 }
 
-pub fn period_smart(s: &[u8]) -> usize {
+fn period_smart(s: &[u8]) -> usize {
     let size = s.len();
 
     // b[i] represents the maximum edge length of s[0..i]

@@ -1,22 +1,26 @@
 #![warn(clippy::all)]
 
-use measurements::get_resolution;
+use std::time::{Duration, Instant};
+use std::thread::sleep;
 use random::{Exp, StringGen};
+use crate::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
+use crate::plot::time_plot;
 
 mod algorithms;
 mod measurements;
 mod random;
+mod plot;
 
 fn main() {
-    // print the resolution of the clock
-    println!("Clock resolution: {:?}", get_resolution());
 
     // Create new exponential distribution
     let rnd = Exp::new(1000, 500000, vec!['a', 'b']);
 
-    let strings = rnd.create_random_strings(StringGen::Method1, 100);
+    let strings = rnd.create_random_strings(StringGen::Method1, 200);
 
-    // todo: measure time (memory?)
+    let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 
-    // todo: graph the results
+    let file_name = "plotters-doc-data/tick_control.svg";
+
+    time_plot(file_name, strings, algorithms, 0.00001);
 }

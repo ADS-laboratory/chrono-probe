@@ -1,5 +1,4 @@
 use rand::{Rng, thread_rng};
-use rand_distr::Exp1;
 
 pub struct Exp {
     min_value: f64,
@@ -27,14 +26,13 @@ impl Exp {
     }
 
     pub fn sample_int(&self) -> usize {
-        let x: f64 = thread_rng().sample(Exp1);
-        let scaled_x = self.min_value + (self.max_value - self.min_value) * x;
+        let x: f64 = thread_rng().gen::<f64>();
+        let scaled_x = self.min_value * (self.max_value / self.min_value).powf(x);
         scaled_x.floor() as usize
     }
 
     pub fn create_random_string1(&self) -> String {
         let n = self.sample_int();
-        println!("n: {}", n);
         let mut s = String::with_capacity(n);
         for _ in 0..n {
             // generate random character
@@ -58,7 +56,7 @@ impl Exp {
             s.push(char);
         }
         for i in q..n {
-            // generate other chars
+            // todo: use another type instead of String
             let char = s.chars().nth((i - 1) % (q + 1)).unwrap();
             s.push(char);
         }
@@ -86,8 +84,10 @@ impl Exp {
         let mut strings = Vec::with_capacity(n);
         let ref_method = &method;
         for i in 0..n {
-            println!("Generating string {}/{}", i + 1, n);
             strings.push(self.create_random_string(ref_method));
+            if i % (n / 20) == 0 {
+                println!("{}%", (i+n/20) * 100 / n);
+            }
         }
         strings
     }
