@@ -1,27 +1,13 @@
 use std::time::Duration;
 use plotters::prelude::*;
+use std::ops::Deref;
 use crate::measurements::get_times;
-use crate::algorithms::{Algorithm};
+use crate::measurements::Point;
+use crate::measurements::Measurement;
 
+pub fn time_plot(file_name: &str, mut measurements: Vec<Measurement>) {
 
-struct Point {
-    length_of_string: u32,
-    time: u32,
-}
-
-fn generate_data(times: Vec<Duration>, strings: &[String]) -> Vec<Point> {
-    let mut data = Vec::with_capacity(times.len());
-    for i in 0..times.len() {
-        let point = Point {
-            length_of_string: strings[i].len() as u32,
-            time: times[i].as_nanos() as u32,
-        };
-        data.push(point);
-    }
-    data
-}
-
-pub fn time_plot(file_name: &str, strings: Vec<String>, algorithms: Vec<Algorithm>, relative_error: f32) {
+    println!("\nPlotting...\n");
 
     // plot setup
     let root = SVGBackend::new(file_name, (1024, 768)).into_drawing_area();
@@ -34,14 +20,20 @@ pub fn time_plot(file_name: &str, strings: Vec<String>, algorithms: Vec<Algorith
         ("sans-serif", 10).into_font().color(&BLACK.mix(0.5)),
     ).unwrap();
 
+    let x_min = measurements.iter().map(|m| m.min_length()).min().unwrap() as u32;
+    let x_max = measurements.iter().map(|m| m.max_length()).max().unwrap() as u32;
+    let y_min = measurements.iter().map(|m| m.min_time()).min().unwrap().as_micros() as u32;
+    let y_max = measurements.iter().map(|m| m.max_time()).max().unwrap().as_micros() as u32;
+
+
     let mut chart = ChartBuilder::on(&upper)
         .caption("fractional period test", ("sans-serif", (5).percent_height()))
         .set_label_area_size(LabelAreaPosition::Left, (8).percent())
         .set_label_area_size(LabelAreaPosition::Bottom, (4).percent())
         .margin((1).percent())
         .build_cartesian_2d(
-            (1000u32..500_000u32).log_scale(),
-            (1500u32..10_000_000u32).log_scale(),
+            (x_min..x_max).log_scale(),
+            (y_min..y_max).log_scale(),
         ).unwrap();
 
     chart
@@ -51,25 +43,23 @@ pub fn time_plot(file_name: &str, strings: Vec<String>, algorithms: Vec<Algorith
         .draw().unwrap();
 
     // draw data for each algorithm
-    for (i, algorithm) in algorithms.iter().enumerate() {
-        println!("\n\nProcessing {} ({}/{})...\n", algorithm.name, i+1, algorithms.len());
-        let durations = get_times(algorithm, &strings, relative_error);
-        let mut data = generate_data(durations, &strings);
-        data.sort_by_key(|k| k.length_of_string);
+    for (i, mut measurement) in measurements.iter_mut().enumerate() {
+
+        measurement.measurement.sort_by_key(|a| a.length_of_string);
 
         let color = Palette99::pick(i).mix(0.9);
         chart
             .draw_series(LineSeries::new(
-                data.iter().map(
+                measurement.measurement.iter().map(
                     |&Point {
                         length_of_string,
                         time,
                         ..
-                    }| (length_of_string, time),
+                    }| (length_of_string as u32, time.as_micros() as u32),
                 ),
                 color.stroke_width(3),
             )).unwrap()
-            .label(algorithm.name)
+            .label(measurement.algorithm_name)
             .legend(move |(x, y)| Rectangle::new([(x, y - 5), (x + 10, y + 5)], color.filled()));
     }
 

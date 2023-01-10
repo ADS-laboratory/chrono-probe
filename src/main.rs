@@ -12,13 +12,21 @@ mod plot;
 fn main() {
 
     // Create new exponential distribution
-    let rnd = Exp::new(1000, 500000, vec!['a', 'b']);
+    let rnd = Exp::new(1000, 500000, vec!['a', 'b', 'c']);
 
     let strings = rnd.create_random_strings(StringGen::Method2, 100);
 
     let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 
+    let results = measurements::measure(&strings, &algorithms, 0.001);
+
     let file_name = "plotters-doc-data/tick_control.svg";
 
-    time_plot(file_name, strings, algorithms, 0.00001);
+    let result_clone = results.clone();
+    for result in result_clone {
+        let log_linear_regression = result.log_scale().linear_regression();
+        println!("{}: {} * x + {}", result.algorithm_name , log_linear_regression.0, log_linear_regression.1)
+    }
+
+    time_plot(file_name, results);
 }
