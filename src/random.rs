@@ -34,9 +34,9 @@ impl Exp {
     pub fn create_random_string1(&self) -> String {
         let n = self.sample_int();
         let mut s = String::with_capacity(n);
+        let number_of_chars = self.char_set.len();
         for _ in 0..n {
             // generate random character
-            let number_of_chars = self.char_set.len();
             let char_index = thread_rng().gen_range(0..number_of_chars);
             let char = self.char_set[char_index];
             s.push(char);
@@ -46,21 +46,21 @@ impl Exp {
 
     pub fn create_random_string2(&self) -> String {
         let n = self.sample_int();
-        let mut s = String::with_capacity(n);
+        let mut s: Vec<u8> = vec![0; n];
         let q = thread_rng().gen_range(0..n);
         for _ in 0..q {
             // generate random character
             let number_of_chars = self.char_set.len();
             let char_index = thread_rng().gen_range(0..number_of_chars);
             let char = self.char_set[char_index];
-            s.push(char);
+            s.push(char as u8);
         }
         for i in q..n {
             // todo: use another type instead of String
-            let char = s.chars().nth((i - 1) % (q + 1)).unwrap();
+            let char = s[(i - 1) % (q + 1)];
             s.push(char);
         }
-        s
+        s.into_iter().map(|x| x as char).collect()
     }
 
     pub fn create_random_string3(&self) -> String {
@@ -83,7 +83,9 @@ impl Exp {
     pub fn create_random_strings(&self, method: StringGen, n: usize) -> Vec<String> {
         let mut strings = Vec::with_capacity(n);
         let ref_method = &method;
+        println!("\n\nGenerating strings...\n");
         for i in 0..n {
+            // todo: match only one time
             strings.push(self.create_random_string(ref_method));
             if i % (n / 20) == 0 {
                 println!("{}%", (i+n/20) * 100 / n);

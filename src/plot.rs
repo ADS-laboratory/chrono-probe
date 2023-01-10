@@ -52,7 +52,7 @@ pub fn time_plot(file_name: &str, strings: Vec<String>, algorithms: Vec<Algorith
 
     // draw data for each algorithm
     for (i, algorithm) in algorithms.iter().enumerate() {
-
+        println!("\n\nProcessing {} ({}/{})...\n", algorithm.name, i+1, algorithms.len());
         let durations = get_times(algorithm, &strings, relative_error);
         let mut data = generate_data(durations, &strings);
         data.sort_by_key(|k| k.length_of_string);

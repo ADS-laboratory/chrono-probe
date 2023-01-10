@@ -1,4 +1,3 @@
-use std::ptr::null_mut;
 use std::time::{Duration, Instant};
 use crate::algorithms::Algorithm;
 
@@ -35,9 +34,12 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32) -> Duration {
 pub fn get_times_with_resolution(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resolution: Duration) -> Vec<Duration> {
     let n = strings.len();
     let mut times = Vec::with_capacity(n);
-    for string in strings {
+    for (i, string) in strings.iter().enumerate() {
         let time = get_time_with_resolution(f, string.as_bytes(), relative_error, resolution);
         times.push(time);
+        if i % (n / 20) == 0 {
+            println!("{}%", (i+n/20) * 100 / n);
+        }
     }
     times
 }

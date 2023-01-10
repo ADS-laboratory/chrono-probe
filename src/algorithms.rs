@@ -4,12 +4,12 @@ pub struct Algorithm {
 }
 
 pub const PERIOD_NAIVE1: Algorithm = Algorithm {
-    name: "period naive1",
+    name: "period naive 1",
     function: period_naive1,
 };
 
 pub const PERIOD_NAIVE2: Algorithm = Algorithm {
-    name: "period naive2",
+    name: "period naive 2",
     function: period_naive2,
 };
 

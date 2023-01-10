@@ -1,7 +1,5 @@
 #![warn(clippy::all)]
 
-use std::time::{Duration, Instant};
-use std::thread::sleep;
 use random::{Exp, StringGen};
 use crate::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
 use crate::plot::time_plot;
@@ -16,7 +14,7 @@ fn main() {
     // Create new exponential distribution
     let rnd = Exp::new(1000, 500000, vec!['a', 'b']);
 
-    let strings = rnd.create_random_strings(StringGen::Method1, 200);
+    let strings = rnd.create_random_strings(StringGen::Method2, 100);
 
     let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 
