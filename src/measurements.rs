@@ -25,6 +25,14 @@ pub fn get_resolution() -> Duration {
     }
 }
 
+pub fn get_average_resolution() -> Duration {
+    let mut sum = Duration::ZERO;
+    for _ in 0..100 {
+        sum += get_resolution();
+    }
+    sum / 100
+}
+
 fn get_time_with_resolution(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Duration) -> Point {
     let mut n = 0;
     let start = Instant::now();
@@ -42,7 +50,7 @@ fn get_time_with_resolution(f: &Algorithm, string: &[u8], relative_error: f32, r
 }
 
 fn get_time(f: &Algorithm, string: &[u8], relative_error: f32) -> Point {
-    let resolution = get_resolution();
+    let resolution = get_average_resolution();
     get_time_with_resolution(f, string, relative_error, resolution)
 }
 
@@ -60,21 +68,26 @@ pub fn get_times_with_resolution(f: &Algorithm, strings: &Vec<String>, relative_
 }
 
 pub fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32) -> Vec<Point> {
-    let resolution = get_resolution();
+    let resolution = get_average_resolution();
     get_times_with_resolution(f, strings, relative_error, resolution)
 }
 
-pub fn measure(strings: &Vec<String>, algorithms: &Vec<Algorithm>, relative_error: f32) -> Vec<Measurement> {
+pub fn measure_with_resolution(strings: &Vec<String>, algorithms: &Vec<Algorithm>, relative_error: f32, resolution: Duration) -> Vec<Measurement> {
     let mut results = Vec::with_capacity(algorithms.len());
     for (i, algorithm) in algorithms.iter().enumerate() {
         println!("\n\nProcessing {} ({}/{})...\n", algorithm.name, i+1, algorithms.len());
-        let times = get_times(algorithm, strings, relative_error);
+        let times = get_times_with_resolution(algorithm, strings, relative_error, resolution);
         results.push(Measurement {
             algorithm_name: algorithm.name,
             measurement: times,
         });
     }
     results
+}
+
+pub fn measure(strings: &Vec<String>, algorithms: &Vec<Algorithm>, relative_error: f32) -> Vec<Measurement> {
+    let resolution = get_average_resolution();
+    measure_with_resolution(strings, algorithms, relative_error, resolution)
 }
 
 impl Measurement {

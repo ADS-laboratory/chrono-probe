@@ -18,7 +18,7 @@ fn main() {
 
     let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 
-    let results = measurements::measure(&strings, &algorithms, 0.001);
+    let results = measurements::measure(&strings, &algorithms, 0.0001);
 
     let file_name = "plotters-doc-data/tick_control.svg";
 

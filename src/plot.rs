@@ -1,7 +1,4 @@
-use std::time::Duration;
 use plotters::prelude::*;
-use std::ops::Deref;
-use crate::measurements::get_times;
 use crate::measurements::Point;
 use crate::measurements::Measurement;
 
@@ -43,7 +40,7 @@ pub fn time_plot(file_name: &str, mut measurements: Vec<Measurement>) {
         .draw().unwrap();
 
     // draw data for each algorithm
-    for (i, mut measurement) in measurements.iter_mut().enumerate() {
+    for (i, measurement) in measurements.iter_mut().enumerate() {
 
         measurement.measurement.sort_by_key(|a| a.length_of_string);
 
