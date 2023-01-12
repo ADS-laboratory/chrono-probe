@@ -46,11 +46,11 @@ impl Exp {
 
     pub fn create_random_string2(&self) -> String {
         let n = self.sample_int();
-        let mut s: Vec<u8> = vec![0; n];
+        let mut s: Vec<u8> = vec![];
+        let number_of_chars = self.char_set.len();
         let q = thread_rng().gen_range(0..n);
         for _ in 0..q {
             // generate random character
-            let number_of_chars = self.char_set.len();
             let char_index = thread_rng().gen_range(0..number_of_chars);
             let char = self.char_set[char_index];
             s.push(char as u8);
@@ -60,7 +60,7 @@ impl Exp {
             let char = s[(i - 1) % (q + 1)];
             s.push(char);
         }
-        s.into_iter().map(|x| x as char).collect()
+        String::from_utf8(s).unwrap()
     }
 
     pub fn create_random_string3(&self) -> String {

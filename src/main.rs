@@ -12,13 +12,13 @@ mod plot;
 fn main() {
 
     // Create new exponential distribution
-    let rnd = Exp::new(1000, 500000, vec!['a', 'b', 'c']);
+    let rnd = Exp::new(1000, 500_000, vec!['a', 'b']);
 
     let strings = rnd.create_random_strings(StringGen::Method2, 100);
 
     let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 
-    let results = measurements::measure(&strings, &algorithms, 0.0001);
+    let results = measurements::measure(&strings, &algorithms, 0.001);
 
     let file_name = "plotters-doc-data/tick_control.svg";
 
