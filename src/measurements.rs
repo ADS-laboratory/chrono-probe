@@ -1,5 +1,6 @@
 use std::time::{Duration, Instant};
 use crate::algorithms::Algorithm;
+use crate::random::GeneratedStrings;
 
 #[derive(Clone)]
 pub struct Point {
@@ -11,6 +12,13 @@ pub struct Point {
 pub struct Measurement {
     pub algorithm_name: &'static str,
     pub measurement: Vec<Point>,
+}
+
+#[derive(Clone)]
+pub struct Measurements {
+    pub measurements: Vec<Measurement>,
+    pub relative_error: f32,
+    pub resolution: Duration,
 }
 
 /// Measures the resolution of the clock
@@ -54,7 +62,7 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32) -> Point {
     get_time_with_resolution(f, string, relative_error, resolution)
 }
 
-pub fn get_times_with_resolution(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resolution: Duration) -> Vec<Point> {
+pub fn get_times_with_resolution(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resolution: Duration) -> Measurement {
     let n = strings.len();
     let mut times = Vec::with_capacity(n);
     for (i, string) in strings.iter().enumerate() {
@@ -64,28 +72,32 @@ pub fn get_times_with_resolution(f: &Algorithm, strings: &Vec<String>, relative_
             println!("{}%", (i+n/20) * 100 / n);
         }
     }
-    times
+    Measurement {
+        algorithm_name: f.name,
+        measurement: times,
+    }
 }
 
-pub fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32) -> Vec<Point> {
+pub fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32) -> Measurement {
     let resolution = get_average_resolution();
     get_times_with_resolution(f, strings, relative_error, resolution)
 }
 
-pub fn measure_with_resolution(strings: &Vec<String>, algorithms: &Vec<Algorithm>, relative_error: f32, resolution: Duration) -> Vec<Measurement> {
+pub fn measure_with_resolution(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative_error: f32, resolution: Duration) -> Measurements {
     let mut results = Vec::with_capacity(algorithms.len());
     for (i, algorithm) in algorithms.iter().enumerate() {
         println!("\n\nProcessing {} ({}/{})...\n", algorithm.name, i+1, algorithms.len());
-        let times = get_times_with_resolution(algorithm, strings, relative_error, resolution);
-        results.push(Measurement {
-            algorithm_name: algorithm.name,
-            measurement: times,
-        });
+        let measurement = get_times_with_resolution(algorithm, &strings.strings, relative_error, resolution);
+        results.push(measurement);
     }
-    results
+    Measurements {
+        measurements: results,
+        relative_error,
+        resolution,
+    }
 }
 
-pub fn measure(strings: &Vec<String>, algorithms: &Vec<Algorithm>, relative_error: f32) -> Vec<Measurement> {
+pub fn measure(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative_error: f32) -> Measurements {
     let resolution = get_average_resolution();
     measure_with_resolution(strings, algorithms, relative_error, resolution)
 }

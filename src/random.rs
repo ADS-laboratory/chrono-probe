@@ -1,10 +1,4 @@
-use rand::{Rng, thread_rng, prelude::Distribution};
-
-pub struct Exp {
-    min_value: f64,
-    max_value: f64,
-    char_set: Vec<char>,
-}
+use rand::{Rng, thread_rng};
 
 pub enum StringGen {
     // todo: better names
@@ -14,6 +8,7 @@ pub enum StringGen {
     Method4,
 }
 
+#[derive(Copy, Clone)]
 pub enum LengthDistribution {
     Uniform,
     Exponential,
@@ -21,9 +16,24 @@ pub enum LengthDistribution {
     ExpRand,
 }
 
-impl Exp {
-    pub fn new(min_value: i32, max_value: i32, char_set: Vec<char>) -> Exp {
-        Exp {
+#[derive(Clone)]
+pub struct Distribution {
+    pub length_distribution: LengthDistribution,
+    pub min_value: f64,
+    pub max_value: f64,
+    pub char_set: Vec<char>,
+}
+
+pub struct GeneratedStrings {
+    pub strings: Vec<String>,
+    pub distribution: Distribution,
+    pub generation_method: StringGen,
+}
+
+impl Distribution {
+    pub fn new(length_distribution: LengthDistribution, min_value: i32, max_value: i32, char_set: Vec<char>) -> Distribution {
+        Distribution {
+            length_distribution,
             min_value: min_value as f64,
             max_value: max_value as f64,
             // todo: check for repetitions in char_set
@@ -32,31 +42,31 @@ impl Exp {
         }
     }
 
-    pub fn uniform_length_set(&self, n: usize) -> Vec<usize> {
+    fn uniform_length_set(&self, n: usize) -> Vec<usize> {
         let mut lengths = Vec::with_capacity(n);
-        let A = self.min_value;
-        let B = (self.max_value - self.min_value) / n as f64;
+        let a = self.min_value;
+        let b = (self.max_value - self.min_value) / n as f64;
         for i in 0..n {
-            let x = A + B * (i as f64);
+            let x = a + b * (i as f64);
             let final_x = x.floor() as usize;
             lengths.push(final_x);
         }
         lengths
     }
 
-    pub fn exponential_length_set(&self, n: usize) -> Vec<usize> {
+    fn exponential_length_set(&self, n: usize) -> Vec<usize> {
         let mut lengths = Vec::with_capacity(n);
-        let A = self.min_value;
-        let B = (self.max_value / self.min_value).powf(1.0 / n as f64);
+        let a = self.min_value;
+        let b = (self.max_value / self.min_value).powf(1.0 / n as f64);
         for i in 0..n {
-            let x = A * B.powf(i as f64);
+            let x = a * b.powf(i as f64);
             let final_x = x.floor() as usize;
             lengths.push(final_x);
         }
         lengths
     }
 
-    pub fn uniform_random_length_set(&self, n: usize) -> Vec<usize> {
+    fn uniform_random_length_set(&self, n: usize) -> Vec<usize> {
         let mut lengths = Vec::with_capacity(n);
         for _ in 0..n {
             let x: f64 = thread_rng().gen::<f64>();
@@ -66,7 +76,7 @@ impl Exp {
         lengths
     }
 
-    pub fn exponential_random_length_set(&self, n: usize) -> Vec<usize> {
+    fn exponential_random_length_set(&self, n: usize) -> Vec<usize> {
         let mut lengths = Vec::with_capacity(n);
         for _ in 0..n {
             let x: f64 = thread_rng().gen::<f64>();
@@ -77,8 +87,8 @@ impl Exp {
         lengths
     }
 
-    pub fn length_set(&self, length_distribution: LengthDistribution, n: usize) -> Vec<usize> {
-        match length_distribution {
+    pub fn length_set(&self, n: usize) -> Vec<usize> {
+        match self.length_distribution {
             LengthDistribution::Uniform => self.uniform_length_set(n),
             LengthDistribution::Exponential => self.exponential_length_set(n),
             LengthDistribution::UniRand => self.uniform_random_length_set(n),
@@ -141,20 +151,23 @@ impl Exp {
         }
     }
 
-    pub fn create_random_strings(&self, str_method: StringGen, lngth_method: LengthDistribution, n: usize) -> Vec<String> {
+    pub fn create_random_strings(&self, generation_method: StringGen, n: usize) -> GeneratedStrings {
         let mut strings = Vec::with_capacity(n);
-        let ref_str_method = &str_method;
-        let length_distribution = self.length_set(lngth_method, n);
+        let length_distribution = self.length_set(n);
         println!("\n\nGenerating strings...\n");
         let mut j: usize = 0; // used to update progress percentage
         for i in length_distribution {
             // todo: match only one time
-            strings.push(self.create_random_string(i, ref_str_method));
+            strings.push(self.create_random_string(i, &generation_method));
             j += 1;
             if j % (n / 20) == 0 {
                 println!("{}%", (j+n/20) * 100 / n);
             }
         }
-        strings
+        GeneratedStrings {
+            strings,
+            generation_method,
+            distribution: self.clone(),
+        }
     }
 }

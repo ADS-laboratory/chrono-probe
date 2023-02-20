@@ -1,8 +1,9 @@
 use plotters::prelude::*;
-use crate::measurements::Point;
-use crate::measurements::Measurement;
+use crate::measurements::{Measurements, Point};
 
-pub fn time_plot(file_name: &str, mut measurements: Vec<Measurement>) {
+pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
+
+    let mut measurements = measurements_struct.measurements;
 
     println!("\nPlotting...\n");
 
