@@ -1,6 +1,6 @@
 #![warn(clippy::all)]
 
-use random::{Distribution, StringGen, LengthDistribution};
+use random::{Distribution, METHOD1, EXPONENTIAL};
 use crate::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
 use crate::plot::time_plot;
 
@@ -12,9 +12,9 @@ mod plot;
 fn main() {
 
     // Create new exponential distribution
-    let rnd = Distribution::new(LengthDistribution::Exponential, 1000, 500_000, vec!['a', 'b']);
+    let rnd = Distribution::new(EXPONENTIAL, 1000, 500_000, vec!['a', 'b']);
 
-    let strings = rnd.create_random_strings(StringGen::Method2, 100);
+    let strings = rnd.create_random_strings(METHOD1, 100);
 
     let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 

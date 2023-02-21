@@ -1,18 +1,27 @@
+/// Representation of an algorithm &\[[u8]] -> [usize]
 pub struct Algorithm {
+    /// The name of the algorithm
     pub name: &'static str,
+    /// The function implemented by the algorithm
     pub function: fn(&[u8]) -> usize,
 }
 
+/// The naive algorithm for finding the period of a string.
+/// Time complexity: O(n<sup>2</sup>)
 pub const PERIOD_NAIVE1: Algorithm = Algorithm {
     name: "period naive 1",
     function: period_naive1,
 };
 
+/// Variation of the naive algorithm for finding the period of a string
+/// Time complexity: O(n<sup>2</sup>)
 pub const PERIOD_NAIVE2: Algorithm = Algorithm {
     name: "period naive 2",
     function: period_naive2,
 };
 
+/// The smart algorithm for finding the period of a string
+/// Time complexity: Θ(n<sup>2</sup>)
 pub const PERIOD_SMART: Algorithm = Algorithm {
     name: "period smart",
     function: period_smart,
