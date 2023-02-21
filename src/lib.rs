@@ -1,14 +1,12 @@
 #![warn(clippy::all)]
-
+pub mod algorithms;
+pub mod measurements;
+pub mod random;
+pub mod plot;
+/*
 use random::{Distribution, METHOD1, EXPONENTIAL};
 use crate::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
 use crate::plot::time_plot;
-
-mod algorithms;
-mod measurements;
-mod random;
-mod plot;
-
 fn main() {
 
     // Create new exponential distribution
@@ -30,3 +28,4 @@ fn main() {
 
     time_plot(file_name, results);
 }
+*/

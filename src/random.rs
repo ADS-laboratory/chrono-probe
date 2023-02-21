@@ -156,7 +156,7 @@ fn create_random_string2(n: usize, char_set: &Vec<char>) -> String {
     String::from_utf8(s).unwrap()
 }
 
-fn create_random_string3(n: usize, char_set: &Vec<char>) -> String {
+fn create_random_string3(_n: usize, _char_set: &Vec<char>) -> String {
     "todo".to_string()
 }
 
