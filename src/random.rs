@@ -204,9 +204,8 @@ impl Distribution {
     /// # Examples
     /// 
     /// ```
-    /// use random::Distribution;
-    /// use random::LengthDistribution;
-    /// 
+    /// use fractional_period::random::{Distribution, LengthDistribution};
+    ///
     /// let distribution = Distribution::new(LengthDistribution::Uniform, 1000, 500_000, vec!['a', 'b']);
     /// ```
     pub fn new(length_distribution: LengthDistribution, min_value: i32, max_value: i32, char_set: Vec<char>) -> Distribution {
@@ -277,10 +276,8 @@ impl Distribution {
     /// # Examples
     /// 
     /// ```
-    /// use random::Distribution;
-    /// use random::LengthDistribution;
-    /// use random::StringGen;
-    /// 
+    /// use fractional_period::random::{Distribution, LengthDistribution, StringGen};
+    ///
     /// let distribution = Distribution::new(LengthDistribution::Uniform, 1000, 500_000, vec!['a', 'b']);
     /// let generated_strings = distribution.create_random_strings(StringGen::Method1, 100);
     /// ```

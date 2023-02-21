@@ -57,12 +57,12 @@ fn get_time_with_resolution(f: &Algorithm, string: &[u8], relative_error: f32, r
     }
 }
 
-fn get_time(f: &Algorithm, string: &[u8], relative_error: f32) -> Point {
+pub fn get_time(f: &Algorithm, string: &[u8], relative_error: f32) -> Point {
     let resolution = get_average_resolution();
     get_time_with_resolution(f, string, relative_error, resolution)
 }
 
-pub fn get_times_with_resolution(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resolution: Duration) -> Measurement {
+fn get_times_with_resolution(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resolution: Duration) -> Measurement {
     let n = strings.len();
     let mut times = Vec::with_capacity(n);
     for (i, string) in strings.iter().enumerate() {
@@ -83,7 +83,7 @@ pub fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32) -> M
     get_times_with_resolution(f, strings, relative_error, resolution)
 }
 
-pub fn measure_with_resolution(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative_error: f32, resolution: Duration) -> Measurements {
+fn measure_with_resolution(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative_error: f32, resolution: Duration) -> Measurements {
     let mut results = Vec::with_capacity(algorithms.len());
     for (i, algorithm) in algorithms.iter().enumerate() {
         println!("\n\nProcessing {} ({}/{})...\n", algorithm.name, i+1, algorithms.len());
