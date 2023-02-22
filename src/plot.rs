@@ -11,6 +11,7 @@ use crate::measurements::{Measurements, Point};
 /// # Example
 /// 
 /// ```
+/// use std::fs;
 /// use fractional_period::random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL};
 /// use fractional_period::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
 /// use fractional_period::measurements::measure;
@@ -20,6 +21,7 @@ use crate::measurements::{Measurements, Point};
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// time_plot("plot.svg", measurements);
+/// fs::remove_file("plot.svg").unwrap();
 /// ```
 pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
 
