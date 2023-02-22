@@ -1,5 +1,4 @@
 use rand::{Rng, thread_rng};
-use crate::random::lengths::Distribution;
 
 pub struct StringGen {
     pub name: &'static str, // todo: is the name useful?
@@ -71,10 +70,4 @@ fn create_random_string4(n: usize, char_set: &Vec<char>) -> String {
     }
     s.push(char);
     s
-}
-
-pub struct GeneratedStrings {
-    pub strings: Vec<String>,
-    pub distribution: Distribution,
-    pub generation_method: StringGen,
 }

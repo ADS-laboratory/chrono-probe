@@ -1,6 +1,6 @@
 use std::time::{Duration, Instant};
 use crate::algorithms::Algorithm;
-use crate::random::strings::GeneratedStrings;
+use crate::random::GeneratedStrings;
 
 #[derive(Clone)]
 pub struct Point {
