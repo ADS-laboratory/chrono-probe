@@ -1,9 +1,31 @@
 use plotters::prelude::*;
 use crate::measurements::{Measurements, Point};
 
+/// Plots the data from the measurements using [plotters]
+/// 
+/// # Arguments
+/// 
+/// * `file_name` - The name of the file to save the plot to
+/// * `measurements_struct` - The measurements to plot
+/// 
+/// # Example
+/// 
+/// ```
+/// use fractional_period::random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL};
+/// use fractional_period::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
+/// use fractional_period::measurements::measure;
+/// use fractional_period::plot::time_plot;
+/// 
+/// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, vec!['a', 'b'], 100);
+/// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
+/// let measurements = measure(&strings, &algorithms, 0.01);
+/// time_plot("plot.svg", measurements);
+/// ```
 pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
 
     let mut measurements = measurements_struct.measurements;
+    let generation_method = measurements_struct.input.generation_method.name;
+    let distribution_name = measurements_struct.input.distribution.length_distribution.name;
 
     println!("\nPlotting...\n");
 
@@ -14,7 +36,7 @@ pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
     let (upper, lower) = root.split_vertically(750);
 
     lower.titled(
-        "Data Source: https://covid.ourworldindata.org/data/owid-covid-data.json",
+        &format!("Fractional period time complexity test using {} length distribution and {} method for string generation", generation_method, distribution_name),
         ("sans-serif", 10).into_font().color(&BLACK.mix(0.5)),
     ).unwrap();
 

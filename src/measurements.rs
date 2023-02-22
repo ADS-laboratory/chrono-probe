@@ -16,13 +16,14 @@ pub struct Measurement {
 
 #[derive(Clone)]
 pub struct Measurements {
+    pub input: GeneratedStrings,
     pub measurements: Vec<Measurement>,
     pub relative_error: f32,
     pub resolution: Duration,
 }
 
 /// Estimates the resolution of the clock
-pub fn get_resolution() -> Duration {
+fn get_resolution() -> Duration {
     // A measurement of a monotonically nondecreasing clock
     let start = Instant::now();
     loop {
@@ -34,7 +35,7 @@ pub fn get_resolution() -> Duration {
 }
 
 /// Estimates the resolution of the clock by averaging 100 measurements
-pub fn get_average_resolution() -> Duration {
+fn get_average_resolution() -> Duration {
     let mut sum = Duration::ZERO;
     for _ in 0..100 {
         sum += get_resolution();
@@ -101,6 +102,18 @@ fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resoluti
 /// * `strings` - The vector of strings to pass to the functions
 /// * `algorithms` - The vector of functions to measure
 /// * `relative_error` - The required relative error of the measurements
+/// 
+/// # Example
+/// 
+/// ```
+/// use fractional_period::random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL};
+/// use fractional_period::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
+/// use fractional_period::measurements::measure;
+/// 
+/// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, vec!['a', 'b'], 100);
+/// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
+/// let measurements = measure(&strings, &algorithms, 0.01);
+/// ```
 pub fn measure(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative_error: f32) -> Measurements {
     let resolution = get_average_resolution();
     let mut results = Vec::with_capacity(algorithms.len());
@@ -110,6 +123,7 @@ pub fn measure(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative
         results.push(measurement);
     }
     Measurements {
+        input: strings.to_owned(),
         measurements: results,
         relative_error,
         resolution,

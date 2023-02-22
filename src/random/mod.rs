@@ -131,6 +131,7 @@ impl Distribution {
     }
 }
 
+#[derive(Clone)]
 pub struct GeneratedStrings {
     pub strings: Vec<String>,
     pub distribution: Distribution,
