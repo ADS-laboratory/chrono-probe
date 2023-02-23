@@ -23,7 +23,7 @@ impl Distribution {
     /// # Examples
     /// 
     /// ```
-    /// use fractional_period::random::{Distribution,
+    /// use time_complexity_plot::random::{Distribution,
     ///                                 lengths::{LengthDistribution, EXPONENTIAL}};
     ///
     /// let distribution = Distribution::new(EXPONENTIAL, 1000, 500_000);
@@ -86,7 +86,7 @@ impl Distribution {
     /// # Examples
     /// 
     /// ```
-    /// use fractional_period::random::{Distribution, GeneratedStrings,
+    /// use time_complexity_plot::random::{Distribution, GeneratedStrings,
     ///                                 lengths::{LengthDistribution, EXPONENTIAL},
     ///                                 strings::{StringGen, METHOD1}};
     ///

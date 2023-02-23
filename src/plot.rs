@@ -12,10 +12,10 @@ use crate::measurements::{Measurements, Point};
 /// 
 /// ```
 /// use std::fs;
-/// use fractional_period::random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL};
-/// use fractional_period::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
-/// use fractional_period::measurements::measure;
-/// use fractional_period::plot::time_plot;
+/// use time_complexity_plot::{random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL},
+///                            algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
+///                            measurements::measure,
+///                            plot::time_plot};
 /// 
 /// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, vec!['a', 'b'], 100);
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];

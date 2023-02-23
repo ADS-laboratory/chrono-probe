@@ -1,6 +1,6 @@
 // todo: change name
-# fractional-period
-A rust library to estimate the time complexity of algorithms.
+# Time complexity plot
+A rust library to plot and estimate the time complexity of algorithms.
 
 ## Configuration
 ### Install Rust
@@ -12,22 +12,22 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 Add this to your Cargo.toml:
 ``` toml
 [dependencies]
-fractional_period = "git@github.com:ADS-laboratory/fractional-period.git"
+fractional_period = "git@github.com:ADS-laboratory/time-complexity-plot.git"
 ```
 
 ## Usage
 ### Example
 // todo: update example with the new structure
 ``` rust
-use fractional_period::random::{Distribution, METHOD1, EXPONENTIAL};
-use crate::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};
-use crate::plot::time_plot;
+use time_complexity_plot::{random::{Distribution, METHOD1, EXPONENTIAL},
+                            algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
+                            plot::time_plot};
 fn main() {
 
     // Create new exponential distribution
-    let rnd = Distribution::new(EXPONENTIAL, 1000, 500_000, vec!['a', 'b']);
+    let rnd = Distribution::new(EXPONENTIAL, 1000, 500_000);
 
-    let strings = rnd.create_random_strings(METHOD1, 100);
+    let strings = rnd.create_random_strings(METHOD1, vec!['a', 'b'], 100);
 
     let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 
