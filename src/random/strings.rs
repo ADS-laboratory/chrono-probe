@@ -1,8 +1,10 @@
 use rand::{Rng, thread_rng};
+use serde::Serialize;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct StringGen {
     pub name: &'static str, // todo: is the name useful?
+    #[serde(skip_serializing)]
     pub function: fn(n: usize, char_set: &Vec<char>) -> String,
 }
 

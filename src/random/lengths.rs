@@ -1,9 +1,11 @@
 use rand::{Rng, thread_rng};
+use serde::Serialize;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 /// A rapresentation of the function that generates a distribution of lengths of strings
 pub struct LengthDistribution {
     pub name: &'static str, // todo: is the name useful?
+    #[serde(skip_serializing)]
     pub function: fn(n: usize, min: f64, max: f64) -> Vec<usize>,
 }
 

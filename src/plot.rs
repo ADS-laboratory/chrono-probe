@@ -25,6 +25,11 @@ use crate::measurements::{Measurements, Point};
 /// ```
 pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
 
+    let x_min = measurements_struct.min_length() as u32;
+    let x_max = measurements_struct.max_length() as u32;
+    let y_min = measurements_struct.min_time().as_micros() as u32;
+    let y_max = measurements_struct.max_time().as_micros() as u32;
+
     let mut measurements = measurements_struct.measurements;
     let generation_method = measurements_struct.input.generation_method.name;
     let distribution_name = measurements_struct.input.distribution.length_distribution.name;
@@ -41,11 +46,6 @@ pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
         &format!("Fractional period time complexity test using {} length distribution and {} method for string generation", generation_method, distribution_name),
         ("sans-serif", 10).into_font().color(&BLACK.mix(0.5)),
     ).unwrap();
-
-    let x_min = measurements.iter().map(|m| m.min_length()).min().unwrap() as u32;
-    let x_max = measurements.iter().map(|m| m.max_length()).max().unwrap() as u32;
-    let y_min = measurements.iter().map(|m| m.min_time()).min().unwrap().as_micros() as u32;
-    let y_max = measurements.iter().map(|m| m.max_time()).max().unwrap().as_micros() as u32;
 
 
     let mut chart = ChartBuilder::on(&upper)

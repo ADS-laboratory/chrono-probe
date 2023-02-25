@@ -1,22 +1,24 @@
 use std::time::{Duration, Instant};
 use crate::algorithms::Algorithm;
 use crate::random::GeneratedStrings;
+use serde::Serialize;
+use std::fs::File;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct Point {
     pub length_of_string: usize,
     pub time: Duration,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct Measurement {
     pub algorithm_name: &'static str,
     pub measurement: Vec<Point>,
 }
 
-#[derive(Clone)]
-pub struct Measurements {
-    pub input: GeneratedStrings,
+#[derive(Clone, Serialize)]
+pub struct Measurements<'a> {
+    pub input: &'a GeneratedStrings,
     pub measurements: Vec<Measurement>,
     pub relative_error: f32,
     pub resolution: Duration,
@@ -114,7 +116,7 @@ fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resoluti
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```
-pub fn measure(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative_error: f32) -> Measurements {
+pub fn measure<'a>(strings: &'a GeneratedStrings, algorithms: &'a Vec<Algorithm>, relative_error: f32) -> Measurements<'a> {
     let resolution = get_average_resolution();
     let mut results = Vec::with_capacity(algorithms.len());
     for (i, algorithm) in algorithms.iter().enumerate() {
@@ -123,7 +125,7 @@ pub fn measure(strings: &GeneratedStrings, algorithms: &Vec<Algorithm>, relative
         results.push(measurement);
     }
     Measurements {
-        input: strings.to_owned(),
+        input: strings,
         measurements: results,
         relative_error,
         resolution,
@@ -209,5 +211,69 @@ impl Measurement {
             });
         }
         new_measurement
+    }
+}
+
+impl Measurements<'_> {
+    pub fn max_time(&self) -> Duration {
+        let mut max = Duration::ZERO;
+        for measurement in self.measurements.iter() {
+            let time = measurement.max_time();
+            if time > max {
+                max = time;
+            }
+        }
+        max
+    }
+
+    pub fn min_time(&self) -> Duration {
+        let mut min = Duration::MAX;
+        for measurement in self.measurements.iter() {
+            let time = measurement.min_time();
+            if time < min {
+                min = time;
+            }
+        }
+        min
+    }
+
+    pub fn max_length(&self) -> usize {
+        let mut max = 0;
+        for measurement in self.measurements.iter() {
+            let length = measurement.max_length();
+            if length > max {
+                max = length;
+            }
+        }
+        max
+    }
+
+    pub fn min_length(&self) -> usize {
+        let mut min = usize::MAX;
+        for measurement in self.measurements.iter() {
+            let length = measurement.min_length();
+            if length < min {
+                min = length;
+            }
+        }
+        min
+    }
+
+    pub fn log_scale(&self) -> Self {
+        let mut new_measurements = Measurements {
+            measurements: Vec::with_capacity(self.measurements.len()),
+            input: self.input,
+            relative_error: self.relative_error,
+            resolution: self.resolution,
+        };
+        for measurement in self.measurements.iter() {
+            new_measurements.measurements.push(measurement.log_scale());
+        }
+        new_measurements
+    }
+
+    pub fn serialize_json(&self, filename: &str) {
+        let mut file = File::create(filename).unwrap();
+        serde_json::to_writer(&mut file, &self).unwrap();
     }
 }

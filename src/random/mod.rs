@@ -1,10 +1,10 @@
 pub mod strings;
 pub mod lengths;
-
+use serde::Serialize;
 use lengths::LengthDistribution;
 use strings::StringGen;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct Distribution {
     pub length_distribution: LengthDistribution,
     pub min_value: f64,
@@ -131,8 +131,9 @@ impl Distribution {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize)]
 pub struct GeneratedStrings {
+    #[serde(skip_serializing)]
     pub strings: Vec<String>,
     pub distribution: Distribution,
     pub char_set: Vec<char>,
