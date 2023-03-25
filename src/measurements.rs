@@ -124,7 +124,7 @@ fn get_times(
 ///                            algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
 ///                            measurements::measure};
 ///
-/// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, vec!['a', 'b'], 100);
+/// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, &vec!['a', 'b'], 100);
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```

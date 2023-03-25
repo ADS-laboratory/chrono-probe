@@ -52,7 +52,6 @@ fn create_random_string2(n: usize, char_set: &Vec<char>) -> String {
         s.push(char as u8);
     }
     for i in q..n {
-        // todo: use another type instead of String
         let char = s[(i - 1) % (q + 1)];
         s.push(char);
     }
