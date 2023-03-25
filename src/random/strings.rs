@@ -1,4 +1,4 @@
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
@@ -67,7 +67,7 @@ fn create_random_string4(n: usize, char_set: &Vec<char>) -> String {
     let mut s = String::with_capacity(n);
     let number_of_chars = char_set.len();
     let mut char = char_set[0];
-    for i in 0..n-1 {
+    for i in 0..n - 1 {
         char = char_set[i % number_of_chars];
         s.push(char);
     }

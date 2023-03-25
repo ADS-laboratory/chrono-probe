@@ -8,9 +8,9 @@ const ALGORITHMS: [Algorithm; 3] = [
 ];
 
 /// Test the given period finding algorithms
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `input` - The string to be analyzed
 /// * `expected` - The expected period
 /// * `algorithms` - The algorithms to be tested
@@ -22,9 +22,9 @@ fn test_algorithms(input: &str, expected: usize, algorithms: &[Algorithm]) {
 }
 
 /// Test all the period finding algorithms
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `input` - The string to be analyzed
 /// * `expected` - The expected period
 fn test(input: &str, expected: usize) {

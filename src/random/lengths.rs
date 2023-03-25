@@ -1,4 +1,4 @@
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
@@ -34,9 +34,9 @@ pub const EXPONENTIAL_RANDOM: LengthDistribution = LengthDistribution {
 };
 
 /// Creates a vector of lengths of strings using an uniform distribution
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `n` - The number of lengths to be generated
 /// * `min` - The minimum length of a string
 /// * `max` - The maximum length of a string
@@ -53,9 +53,9 @@ fn uniform_length_set(n: usize, min: f64, max: f64) -> Vec<usize> {
 }
 
 /// Creates a vector of lengths of strings using an exponential distribution
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `n` - The number of lengths to be generated
 /// * `min` - The minimum length of a string
 /// * `max` - The maximum length of a string
@@ -72,9 +72,9 @@ fn exponential_length_set(n: usize, min: f64, max: f64) -> Vec<usize> {
 }
 
 /// Creates a vector of lengths of strings using an uniform random distribution
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `n` - The number of lengths to be generated
 /// * `min` - The minimum length of a string
 /// * `max` - The maximum length of a string
@@ -89,9 +89,9 @@ fn uniform_random_length_set(n: usize, min: f64, max: f64) -> Vec<usize> {
 }
 
 /// Creates a vector of lengths of strings using an exponential random distribution
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `n` - The number of lengths to be generated
 /// * `min` - The minimum length of a string
 /// * `max` - The maximum length of a string

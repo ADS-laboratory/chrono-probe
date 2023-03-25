@@ -1,8 +1,8 @@
 #![allow(clippy::explicit_counter_loop)]
-pub mod strings;
 pub mod lengths;
-use serde::Serialize;
+pub mod strings;
 use lengths::LengthDistribution;
+use serde::Serialize;
 use strings::StringGen;
 
 #[derive(Clone, Serialize)]
@@ -14,22 +14,26 @@ pub struct Distribution {
 
 impl Distribution {
     /// Creates a new distribution
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `length_distribution` - The distribution of the lengths of the strings
     /// * `min_value` - The minimum value of the length of the strings
     /// * `max_value` - The maximum value of the length of the strings
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use time_complexity_plot::random::{Distribution,
     ///                                 lengths::{LengthDistribution, EXPONENTIAL}};
     ///
     /// let distribution = Distribution::new(EXPONENTIAL, 1000, 500_000);
     /// ```
-    pub fn new(length_distribution: LengthDistribution, min_value: i32, max_value: i32) -> Distribution {
+    pub fn new(
+        length_distribution: LengthDistribution,
+        min_value: i32,
+        max_value: i32,
+    ) -> Distribution {
         Distribution {
             length_distribution,
             min_value: min_value as f64,
@@ -38,50 +42,56 @@ impl Distribution {
     }
 
     /// Creates a vector of lengths of strings using the distribution specified in the struct
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `n` - The number of lengths to be generated
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// * Panics if the number of lengths to be generated is less than 1
     fn length_set(&self, n: usize) -> Vec<usize> {
-        assert!( n > 0 , "The number of lengths to be generated must be greater than 0");
+        assert!(
+            n > 0,
+            "The number of lengths to be generated must be greater than 0"
+        );
         (self.length_distribution.function)(n, self.min_value, self.max_value)
     }
 
     /// Creates a random string using the character set specified in the struct
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `n` - The length of the string to be generated
     /// * `method` - The method to be used to generate the string
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// * Panics if the length of the string to be generated is less than 1
     fn create_random_string(n: usize, method: &StringGen, char_set: &Vec<char>) -> String {
-        assert!(n > 0, "The length of the string to be generated must be greater than 0");
+        assert!(
+            n > 0,
+            "The length of the string to be generated must be greater than 0"
+        );
         (method.function)(n, char_set)
     }
 
     /// Creates a vector of random strings using the character set specified in the struct
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `generation_method` - The method to be used to generate the strings
     /// * `n` - The number of strings to be generated
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// * Panics if the number of strings to be generated is less than 1
     /// * Panics if the character set is empty
     /// * Panics if the character set contains repetitions
     /// * Panics if the character set contains non ascii characters
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use time_complexity_plot::random::{Distribution, GeneratedStrings,
     ///                                 lengths::{LengthDistribution, EXPONENTIAL},
@@ -90,8 +100,16 @@ impl Distribution {
     /// let distribution = Distribution::new(EXPONENTIAL, 1000, 500_000);
     /// let generated_strings = distribution.create_random_strings(METHOD1, &vec!['a', 'b'], 100);
     /// ```
-    pub fn create_random_strings(&self, generation_method: StringGen, char_set: &Vec<char>, n: usize) -> GeneratedStrings {
-        assert!(n > 0, "The number of strings to be generated must be greater than 0");
+    pub fn create_random_strings(
+        &self,
+        generation_method: StringGen,
+        char_set: &Vec<char>,
+        n: usize,
+    ) -> GeneratedStrings {
+        assert!(
+            n > 0,
+            "The number of strings to be generated must be greater than 0"
+        );
         assert!(!char_set.is_empty(), "The character set must not be empty");
         // checking for repetitions in char_set and non ascii characters
         let mut char_set_sorted = char_set.to_owned();

@@ -2,8 +2,8 @@
 #![warn(clippy::cargo)]
 pub mod algorithms;
 pub mod measurements;
-pub mod random;
 pub mod plot;
+pub mod random;
 /*
 use random::{Distribution, METHOD1, EXPONENTIAL};
 use crate::algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART};

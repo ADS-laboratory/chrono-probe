@@ -30,9 +30,9 @@ pub const PERIOD_SMART: Algorithm = Algorithm {
 };
 
 /// The naive algorithm for finding the period of a string.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `s` - The string to be analyzed
 fn period_naive1(s: &[u8]) -> usize {
     let n = s.len();
@@ -49,9 +49,9 @@ fn period_naive1(s: &[u8]) -> usize {
 }
 
 /// Variation of the naive algorithm for finding the period of a string
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `s` - The string to be analyzed
 fn period_naive2(s: &[u8]) -> usize {
     let n = s.len();
@@ -64,9 +64,9 @@ fn period_naive2(s: &[u8]) -> usize {
 }
 
 /// The smart algorithm for finding the period of a string
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `s` - The string to be analyzed
 fn period_smart(s: &[u8]) -> usize {
     let size = s.len();

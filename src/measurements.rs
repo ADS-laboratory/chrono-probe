@@ -1,9 +1,9 @@
 #![allow(clippy::explicit_counter_loop)]
-use std::time::{Duration, Instant};
 use crate::algorithms::Algorithm;
 use crate::random::GeneratedStrings;
 use serde::Serialize;
 use std::fs::File;
+use std::time::{Duration, Instant};
 
 #[derive(Clone, Serialize)]
 pub struct Point {
@@ -47,9 +47,9 @@ fn get_average_resolution() -> Duration {
 }
 
 /// Estimates the time it takes to run a function given a single input
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `f` - The function to measure
 /// * `string` - The string to pass to the function
 /// * `relative_error` - The required relative error of the measurement
@@ -65,7 +65,7 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Durat
         end = start.elapsed();
         n += 1;
         if end > min_time_measurable {
-            break
+            break;
         }
     }
     Point {
@@ -75,14 +75,19 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Durat
 }
 
 /// Estimates the times it takes to run a function given a vector of inputs
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `f` - The function to measure
 /// * `strings` - The vector of strings to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resolution: Duration) -> Measurement {
+fn get_times(
+    f: &Algorithm,
+    strings: &Vec<String>,
+    relative_error: f32,
+    resolution: Duration,
+) -> Measurement {
     let n = strings.len();
     let mut times = Vec::with_capacity(n);
     #[cfg(feature = "debug")]
@@ -105,30 +110,39 @@ fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resoluti
 }
 
 /// Measures the time it takes to run different functions given a vector of inputs
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `strings` - The vector of strings to pass to the functions
 /// * `algorithms` - The vector of functions to measure
 /// * `relative_error` - The required relative error of the measurements
-/// 
+///
 /// # Example
-/// 
+///
 /// ```
 /// use time_complexity_plot::{random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL},
 ///                            algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
 ///                            measurements::measure};
-/// 
+///
 /// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, vec!['a', 'b'], 100);
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```
-pub fn measure<'a>(strings: &'a GeneratedStrings, algorithms: &'a Vec<Algorithm>, relative_error: f32) -> Measurements<'a> {
+pub fn measure<'a>(
+    strings: &'a GeneratedStrings,
+    algorithms: &'a Vec<Algorithm>,
+    relative_error: f32,
+) -> Measurements<'a> {
     assert!(relative_error > 0.0, "Relative error must be positive");
     let resolution = get_average_resolution();
     let mut results = Vec::with_capacity(algorithms.len());
     for (i, algorithm) in algorithms.iter().enumerate() {
-        println!("\n\nProcessing {} ({}/{})...\n", algorithm.name, i+1, algorithms.len());
+        println!(
+            "\n\nProcessing {} ({}/{})...\n",
+            algorithm.name,
+            i + 1,
+            algorithms.len()
+        );
         let measurement = get_times(algorithm, &strings.strings, relative_error, resolution);
         results.push(measurement);
     }
@@ -144,46 +158,38 @@ pub fn measure<'a>(strings: &'a GeneratedStrings, algorithms: &'a Vec<Algorithm>
 impl Measurement {
     /// Get the maximum time it took to run the function
     pub fn max_time(&self) -> Duration {
-        let mut max = Duration::ZERO;
-        for point in self.measurement.iter() {
-            if point.time > max {
-                max = point.time;
-            }
-        }
-        max
+        self.measurement
+            .iter()
+            .max_by_key(|point| point.time)
+            .unwrap()
+            .time
     }
 
     /// Get the minimum time it took to run the function
     pub fn min_time(&self) -> Duration {
-        let mut min = Duration::MAX;
-        for point in self.measurement.iter() {
-            if point.time < min {
-                min = point.time;
-            }
-        }
-        min
+        self.measurement
+            .iter()
+            .min_by_key(|point| point.time)
+            .unwrap()
+            .time
     }
 
     /// Get the maximum length of the strings passed to the function
     pub fn max_length(&self) -> usize {
-        let mut max = 0;
-        for point in self.measurement.iter() {
-            if point.length_of_string > max {
-                max = point.length_of_string;
-            }
-        }
-        max
+        self.measurement
+            .iter()
+            .max_by_key(|point| point.length_of_string)
+            .unwrap()
+            .length_of_string
     }
 
     /// Get the minimum length of the strings passed to the function
     pub fn min_length(&self) -> usize {
-        let mut min = usize::MAX;
-        for point in self.measurement.iter() {
-            if point.length_of_string < min {
-                min = point.length_of_string;
-            }
-        }
-        min
+        self.measurement
+            .iter()
+            .min_by_key(|point| point.length_of_string)
+            .unwrap()
+            .length_of_string
     }
 
     pub fn linear_regression(&self) -> (f32, f32) {
@@ -212,7 +218,6 @@ impl Measurement {
             measurement: Vec::with_capacity(self.measurement.len()),
         };
         for point in self.measurement.iter() {
-
             new_measurement.measurement.push(Point {
                 length_of_string: (point.length_of_string as f32).log2() as usize,
                 time: Duration::from_micros((point.time.as_micros() as f32).log2() as u64),
@@ -224,47 +229,35 @@ impl Measurement {
 
 impl Measurements<'_> {
     pub fn max_time(&self) -> Duration {
-        let mut max = Duration::ZERO;
-        for measurement in self.measurements.iter() {
-            let time = measurement.max_time();
-            if time > max {
-                max = time;
-            }
-        }
-        max
+        self.measurements
+            .iter()
+            .max_by_key(|measurement| measurement.max_time())
+            .unwrap()
+            .max_time()
     }
 
     pub fn min_time(&self) -> Duration {
-        let mut min = Duration::MAX;
-        for measurement in self.measurements.iter() {
-            let time = measurement.min_time();
-            if time < min {
-                min = time;
-            }
-        }
-        min
+        self.measurements
+            .iter()
+            .min_by_key(|measurement| measurement.min_time())
+            .unwrap()
+            .min_time()
     }
 
     pub fn max_length(&self) -> usize {
-        let mut max = 0;
-        for measurement in self.measurements.iter() {
-            let length = measurement.max_length();
-            if length > max {
-                max = length;
-            }
-        }
-        max
+        self.measurements
+            .iter()
+            .max_by_key(|measurement| measurement.max_length())
+            .unwrap()
+            .max_length()
     }
 
     pub fn min_length(&self) -> usize {
-        let mut min = usize::MAX;
-        for measurement in self.measurements.iter() {
-            let length = measurement.min_length();
-            if length < min {
-                min = length;
-            }
-        }
-        min
+        self.measurements
+            .iter()
+            .min_by_key(|measurement| measurement.min_length())
+            .unwrap()
+            .min_length()
     }
 
     pub fn log_scale(&self) -> Self {
