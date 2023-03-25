@@ -87,7 +87,7 @@ pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
 
     chart
         .configure_series_labels()
-        .border_style(&BLACK)
+        .border_style(BLACK)
         .draw().unwrap();
 
     // To avoid the IO failure being ignored silently, we manually call the present function

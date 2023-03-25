@@ -1,3 +1,4 @@
+#![allow(clippy::explicit_counter_loop)]
 use std::time::{Duration, Instant};
 use crate::algorithms::Algorithm;
 use crate::random::GeneratedStrings;
@@ -67,7 +68,7 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Durat
             break
         }
     }
-    return Point {
+    Point {
         length_of_string: string.len(),
         time: end / n,
     }
@@ -84,11 +85,17 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Durat
 fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resolution: Duration) -> Measurement {
     let n = strings.len();
     let mut times = Vec::with_capacity(n);
-    for (i, string) in strings.iter().enumerate() {
+    #[cfg(feature = "debug")]
+    let mut i = 0;
+    for string in strings {
         let time = get_time(f, string.as_bytes(), relative_error, resolution);
         times.push(time);
-        if i % (n / 20) == 0 {
-            println!("{}%", (i+n/20) * 100 / n);
+        #[cfg(feature = "debug")]
+        {
+            if i % (n / 20) == 0 {
+                println!("{}%", i * 100 / n);
+            }
+            i += 1;
         }
     }
     Measurement {
@@ -117,6 +124,7 @@ fn get_times(f: &Algorithm, strings: &Vec<String>, relative_error: f32, resoluti
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```
 pub fn measure<'a>(strings: &'a GeneratedStrings, algorithms: &'a Vec<Algorithm>, relative_error: f32) -> Measurements<'a> {
+    assert!(relative_error > 0.0, "Relative error must be positive");
     let resolution = get_average_resolution();
     let mut results = Vec::with_capacity(algorithms.len());
     for (i, algorithm) in algorithms.iter().enumerate() {

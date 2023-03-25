@@ -1,4 +1,5 @@
 #![warn(clippy::all)]
+#![warn(clippy::cargo)]
 pub mod algorithms;
 pub mod measurements;
 pub mod random;

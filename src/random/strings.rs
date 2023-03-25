@@ -60,7 +60,7 @@ fn create_random_string2(n: usize, char_set: &Vec<char>) -> String {
 }
 
 fn create_random_string3(_n: usize, _char_set: &Vec<char>) -> String {
-    "todo".to_string()
+    todo!()
 }
 
 fn create_random_string4(n: usize, char_set: &Vec<char>) -> String {

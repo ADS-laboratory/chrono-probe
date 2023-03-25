@@ -1,3 +1,4 @@
+#![allow(clippy::explicit_counter_loop)]
 pub mod strings;
 pub mod lengths;
 use serde::Serialize;
@@ -46,9 +47,7 @@ impl Distribution {
     /// 
     /// * Panics if the number of lengths to be generated is less than 1
     fn length_set(&self, n: usize) -> Vec<usize> {
-        if n < 1 {
-            panic!("The number of lengths to be generated must be greater than 0");
-        }
+        assert!( n > 0 , "The number of lengths to be generated must be greater than 0");
         (self.length_distribution.function)(n, self.min_value, self.max_value)
     }
 
@@ -62,10 +61,8 @@ impl Distribution {
     /// # Panics
     /// 
     /// * Panics if the length of the string to be generated is less than 1
-    fn create_random_string(&self, n: usize, method: &StringGen, char_set: &Vec<char>) -> String {
-        if n < 1 {
-            panic!("The length of the string to be generated must be greater than 0");
-        }
+    fn create_random_string(n: usize, method: &StringGen, char_set: &Vec<char>) -> String {
+        assert!(n > 0, "The length of the string to be generated must be greater than 0");
         (method.function)(n, char_set)
     }
 
@@ -91,17 +88,13 @@ impl Distribution {
     ///                                 strings::{StringGen, METHOD1}};
     ///
     /// let distribution = Distribution::new(EXPONENTIAL, 1000, 500_000);
-    /// let generated_strings = distribution.create_random_strings(METHOD1, vec!['a', 'b'], 100);
+    /// let generated_strings = distribution.create_random_strings(METHOD1, &vec!['a', 'b'], 100);
     /// ```
-    pub fn create_random_strings(&self, generation_method: StringGen, char_set: Vec<char>, n: usize) -> GeneratedStrings {
-        if n < 1 {
-            panic!("The number of strings to be generated must be greater than 0");
-        }
-        if char_set.is_empty() {
-            panic!("The character set must not be empty");
-        }
+    pub fn create_random_strings(&self, generation_method: StringGen, char_set: &Vec<char>, n: usize) -> GeneratedStrings {
+        assert!(n > 0, "The number of strings to be generated must be greater than 0");
+        assert!(!char_set.is_empty(), "The character set must not be empty");
         // checking for repetitions in char_set and non ascii characters
-        let mut char_set_sorted = char_set.clone();
+        let mut char_set_sorted = char_set.to_owned();
         char_set_sorted.sort_by(|a, b| b.cmp(a));
         for i in 0..char_set_sorted.len() - 1 {
             if char_set_sorted[i] == char_set_sorted[i + 1] {
@@ -114,12 +107,16 @@ impl Distribution {
         let mut strings = Vec::with_capacity(n);
         let length_distribution = self.length_set(n);
         println!("\n\nGenerating strings...\n");
+        #[cfg(feature = "debug")]
         let mut j: usize = 0; // used to update progress percentage
         for i in length_distribution {
-            strings.push(self.create_random_string(i, &generation_method, &char_set));
-            j += 1;
-            if j % (n / 20) == 0 {
-                println!("{}%", (j+n/20) * 100 / n);
+            strings.push(Self::create_random_string(i, &generation_method, char_set));
+            #[cfg(feature = "debug")]
+            {
+                if j % (n / 20) == 0 {
+                    println!("{}%", j * 100 / n);
+                }
+                j += 1;
             }
         }
         GeneratedStrings {

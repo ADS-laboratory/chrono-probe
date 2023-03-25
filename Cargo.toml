@@ -2,8 +2,18 @@
 name = "time-complexity-plot"
 version = "0.1.0"
 edition = "2021"
+description = "Compare time complexity of algorithms"
+license = "MIT"
+repository = "https://github.com/ADS-laboratory/time-complexity-plot.git"
+readme = "README.md"
+authors = ["Danelutti Leonardo", "Della Giustina Lorenzo"]
+keywords = ["time-complexity", "plot", "algorithm"]
+categories = ["algorithms", "plot"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+debug = []
 
 [dependencies]
 plotters = "0.3.4"
