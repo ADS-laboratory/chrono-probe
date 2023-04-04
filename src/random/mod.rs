@@ -55,7 +55,7 @@ impl StringsBuilder {
             "The number of strings to be generated must be greater than 0"
         );
         let mut strings = Vec::new();
-        let length_distribution = self.distribution.length_set(n);
+        let length_distribution = self.distribution.create_length_set(n);
         println!("\n\nGenerating strings...\n");
         #[cfg(feature = "debug")]
         // used to update progress percentage
