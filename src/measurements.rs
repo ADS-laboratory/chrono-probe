@@ -19,7 +19,7 @@ pub struct Measurement {
 
 #[derive(Clone, Serialize)]
 pub struct Measurements<'a> {
-    pub input: &'a GeneratedStrings,
+    pub input: &'a GeneratedStrings<'a>,
     pub measurements: Vec<Measurement>,
     pub relative_error: f32,
     pub resolution: Duration,
@@ -120,11 +120,20 @@ fn get_times(
 /// # Example
 ///
 /// ```
-/// use time_complexity_plot::{random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL},
-///                            algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
-///                            measurements::measure};
+/// use time_complexity_plot::{
+///     algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
+///     measurements::measure,
+///     random::{
+///         lengths::{LengthDistribution, EXPONENTIAL},
+///         strings::{StringGen, METHOD1},
+///         StringsBuilder,
+///     },
+/// };
 ///
-/// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, &vec!['a', 'b'], 100);
+/// let length_distribution = LengthDistribution::new(EXPONENTIAL, 1000, 500_000);
+/// let string_gen = StringGen::new(METHOD1, vec!['a', 'b']);
+/// let strings_builder = StringsBuilder::new(length_distribution, string_gen);
+/// let strings = strings_builder.create_random_strings(100);
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```

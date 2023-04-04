@@ -12,12 +12,21 @@ use plotters::prelude::*;
 ///
 /// ```
 /// use std::fs;
-/// use time_complexity_plot::{random::{Distribution, strings::METHOD1, lengths::EXPONENTIAL},
-///                            algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
-///                            measurements::measure,
-///                            plot::time_plot};
+/// use time_complexity_plot::{
+///     algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
+///     measurements::measure,
+///     random::{
+///         lengths::{LengthDistribution, EXPONENTIAL},
+///         strings::{StringGen, METHOD1},
+///         StringsBuilder,
+///     },
+///     plot::time_plot,
+/// };
 ///
-/// let strings = Distribution::new(EXPONENTIAL, 1000, 500_000).create_random_strings(METHOD1, &vec!['a', 'b'], 100);
+/// let length_distribution = LengthDistribution::new(EXPONENTIAL, 1000, 500_000);
+/// let string_gen = StringGen::new(METHOD1, vec!['a', 'b']);
+/// let strings_builder = StringsBuilder::new(length_distribution, string_gen);
+/// let strings = strings_builder.create_random_strings(100);
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// time_plot("plot.svg", measurements);
@@ -30,11 +39,17 @@ pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
     let y_max = measurements_struct.max_time().as_micros() as u32;
 
     let mut measurements = measurements_struct.measurements;
-    let generation_method = measurements_struct.input.generation_method.name;
+    let generation_method = measurements_struct
+        .input
+        .builder
+        .generation_method
+        .function
+        .name;
     let distribution_name = measurements_struct
         .input
+        .builder
         .distribution
-        .length_distribution
+        .length_distribution_fn
         .name;
 
     println!("\nPlotting...\n");
