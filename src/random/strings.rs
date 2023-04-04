@@ -43,7 +43,7 @@ fn create_random_string1(n: usize, char_set: &Vec<char>) -> String {
 }
 
 fn create_random_string2(n: usize, char_set: &Vec<char>) -> String {
-    let mut s: Vec<u8> = vec![];
+    let mut s: Vec<u8> = Vec::with_capacity(n);
     let number_of_chars = char_set.len();
     let q = thread_rng().gen_range(0..n);
     for _ in 0..q {

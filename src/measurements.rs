@@ -54,7 +54,7 @@ fn get_average_resolution() -> Duration {
 /// * `string` - The string to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Duration) -> Point {
+fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Duration) -> Duration {
     // todo: make this more accurate by subtracting the time it takes to run the lines of code after the function call
     let mut n = 0;
     let min_time_measurable = resolution * ((1.0 / relative_error) + 1.0) as u32;
@@ -68,9 +68,32 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Durat
             break;
         }
     }
+    end / n
+}
+
+/// Estimates the time it takes to run a function given a vector of inputs of the same length.
+/// Return a Point with the length of the strings and the total time it took to run the function on all the strings.
+///
+/// # Arguments
+///
+/// * `f` - The function to measure
+/// * `strings` - The vector of strings to pass to the function
+/// * `relative_error` - The required relative error of the measurement
+/// * `resolution` - The resolution of the clock
+fn get_time_same_length(
+    f: &Algorithm,
+    strings: &Vec<String>,
+    relative_error: f32,
+    resolution: Duration,
+) -> Point {
+    let mut total_time = Duration::ZERO;
+    for string in strings {
+        let time = get_time(f, string.as_bytes(), relative_error, resolution);
+        total_time += time;
+    }
     Point {
-        length_of_string: string.len(),
-        time: end / n,
+        length_of_string: strings[0].len(),
+        time: total_time,
     }
 }
 
@@ -84,7 +107,7 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Durat
 /// * `resolution` - The resolution of the clock
 fn get_times(
     f: &Algorithm,
-    strings: &Vec<String>,
+    strings: &Vec<Vec<String>>,
     relative_error: f32,
     resolution: Duration,
 ) -> Measurement {
@@ -93,7 +116,7 @@ fn get_times(
     #[cfg(feature = "debug")]
     let mut i = 0;
     for string in strings {
-        let time = get_time(f, string.as_bytes(), relative_error, resolution);
+        let time = get_time_same_length(f, string, relative_error, resolution);
         times.push(time);
         #[cfg(feature = "debug")]
         {
@@ -163,7 +186,7 @@ pub fn measure<'a>(
     }
 }
 
-// Some useful functions for Measurements
+// Some useful functions for Measurement
 impl Measurement {
     /// Get the maximum time it took to run the function
     pub fn max_time(&self) -> Duration {
