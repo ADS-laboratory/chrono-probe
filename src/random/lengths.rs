@@ -159,7 +159,7 @@ impl LengthDistribution {
     /// # Panics
     ///
     /// * Panics if the number of lengths to be generated is less than 1
-    pub fn length_set(&self, n: usize) -> Vec<usize> {
+    pub fn create_length_set(&self, n: usize) -> Vec<usize> {
         assert!(
             n > 0,
             "The number of lengths to be generated must be greater than 0"
