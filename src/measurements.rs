@@ -1,25 +1,22 @@
-#![allow(clippy::explicit_counter_loop)]
-use crate::algorithms::Algorithm;
-use crate::random::GeneratedStrings;
+use crate::input::{Input, InputStruct};
 use serde::Serialize;
 use std::fs::File;
 use std::time::{Duration, Instant};
 
-#[derive(Clone, Serialize)]
+#[derive(Serialize)]
 pub struct Point {
-    pub length_of_string: usize,
+    pub size: usize,
     pub time: Duration,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Serialize)]
 pub struct Measurement {
-    pub algorithm_name: &'static str,
+    pub algorithm_name: String,
     pub measurement: Vec<Point>,
 }
 
-#[derive(Clone, Serialize)]
-pub struct Measurements<'a> {
-    pub input: &'a GeneratedStrings<'a>,
+#[derive(Serialize)]
+pub struct Measurements {
     pub measurements: Vec<Measurement>,
     pub relative_error: f32,
     pub resolution: Duration,
@@ -54,16 +51,34 @@ fn get_average_resolution() -> Duration {
 /// * `string` - The string to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Duration) -> Duration {
-    // todo: make this more accurate by subtracting the time it takes to run the lines of code after the function call
+fn get_time<I: Input + Clone, O>(
+    f: &fn(I) -> O,
+    input: I,
+    relative_error: f32,
+    resolution: Duration,
+) -> Duration {
     let mut n = 0;
+    // The minimum time measurable
     let min_time_measurable = resolution * ((1.0 / relative_error) + 1.0) as u32;
     let mut end: Duration;
-    let start = Instant::now();
+    let mut start = Instant::now();
     loop {
-        (f.function)(string);
-        end = start.elapsed();
+        // Measure the time it takes to clone the input
+        let start_input_clone = Instant::now();
+        let input_cloned = input.clone();
         n += 1;
+        let end_input_clone = start_input_clone.elapsed();
+
+        // Run the function
+        (f)(input_cloned);
+
+        // Remove the time it takes to clone the input
+        start += end_input_clone;
+
+        // Measure the time it takes to run the function
+        end = start.elapsed();
+
+        // Exit the loop if the time it takes to run the function is greater than the minimum time measurable
         if end > min_time_measurable {
             break;
         }
@@ -80,19 +95,20 @@ fn get_time(f: &Algorithm, string: &[u8], relative_error: f32, resolution: Durat
 /// * `strings` - The vector of strings to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_time_same_length(
-    f: &Algorithm,
-    strings: &Vec<String>,
+fn get_time_same_length<I: Input + Clone, O>(
+    f: &fn(I) -> O,
+    inputs: &Vec<I>,
     relative_error: f32,
     resolution: Duration,
 ) -> Point {
     let mut total_time = Duration::ZERO;
-    for string in strings {
-        let time = get_time(f, string.as_bytes(), relative_error, resolution);
+    let size = inputs[0].get_size();
+    for input in inputs {
+        let time = get_time(f, input.clone(), relative_error, resolution);
         total_time += time;
     }
     Point {
-        length_of_string: strings[0].len(),
+        size,
         time: total_time,
     }
 }
@@ -105,29 +121,26 @@ fn get_time_same_length(
 /// * `strings` - The vector of strings to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_times(
-    f: &Algorithm,
-    strings: &Vec<Vec<String>>,
+fn get_times<I: Input + Clone, O>(
+    f: &fn(I) -> O,
+    inputs: &InputStruct<I>,
     relative_error: f32,
     resolution: Duration,
 ) -> Measurement {
-    let n = strings.len();
+    let n = inputs.inputs.len();
     let mut times = Vec::with_capacity(n);
-    #[cfg(feature = "debug")]
-    let mut i = 0;
-    for string in strings {
-        let time = get_time_same_length(f, string, relative_error, resolution);
+    for (_i, input) in inputs.inputs.iter().enumerate() {
+        let time = get_time_same_length(f, input, relative_error, resolution);
         times.push(time);
         #[cfg(feature = "debug")]
         {
-            if i % (n / 20) == 0 {
-                println!("{}%", i * 100 / n);
+            if _i % (n / 20) == 0 {
+                println!("{}%", _i * 100 / n);
             }
-            i += 1;
         }
     }
     Measurement {
-        algorithm_name: f.name,
+        algorithm_name: format!("{:?}", f),
         measurement: times,
     }
 }
@@ -160,26 +173,26 @@ fn get_times(
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```
-pub fn measure<'a>(
-    strings: &'a GeneratedStrings,
-    algorithms: &'a Vec<Algorithm>,
+pub fn measure<I: Input + Clone, O>(
+    inputs: &InputStruct<I>,
+    algorithms: &Vec<fn(I) -> O>,
     relative_error: f32,
-) -> Measurements<'a> {
+) -> Measurements {
     assert!(relative_error > 0.0, "Relative error must be positive");
     let resolution = get_average_resolution();
     let mut results = Vec::with_capacity(algorithms.len());
-    for (i, algorithm) in algorithms.iter().enumerate() {
+    for (_i, algorithm) in algorithms.iter().enumerate() {
+        #[cfg(feature = "debug")]
         println!(
-            "\n\nProcessing {} ({}/{})...\n",
-            algorithm.name,
-            i + 1,
+            "\n\nProcessing {:?} ({}/{})...\n",
+            algorithm,
+            _i + 1,
             algorithms.len()
         );
-        let measurement = get_times(algorithm, &strings.strings, relative_error, resolution);
+        let measurement = get_times(algorithm, inputs, relative_error, resolution);
         results.push(measurement);
     }
     Measurements {
-        input: strings,
         measurements: results,
         relative_error,
         resolution,
@@ -210,18 +223,18 @@ impl Measurement {
     pub fn max_length(&self) -> usize {
         self.measurement
             .iter()
-            .max_by_key(|point| point.length_of_string)
+            .max_by_key(|point| point.size)
             .unwrap()
-            .length_of_string
+            .size
     }
 
     /// Get the minimum length of the strings passed to the function
     pub fn min_length(&self) -> usize {
         self.measurement
             .iter()
-            .min_by_key(|point| point.length_of_string)
+            .min_by_key(|point| point.size)
             .unwrap()
-            .length_of_string
+            .size
     }
 
     pub fn linear_regression(&self) -> (f32, f32) {
@@ -231,7 +244,7 @@ impl Measurement {
         let mut sum_xx = 0.0;
         let mut n = 0.0;
         for point in self.measurement.iter() {
-            let x = point.length_of_string as f32;
+            let x = point.size as f32;
             let y = point.time.as_micros() as f32;
             sum_x += x;
             sum_y += y;
@@ -246,12 +259,12 @@ impl Measurement {
 
     pub fn log_scale(&self) -> Self {
         let mut new_measurement = Measurement {
-            algorithm_name: self.algorithm_name,
+            algorithm_name: self.algorithm_name.clone(),
             measurement: Vec::with_capacity(self.measurement.len()),
         };
         for point in self.measurement.iter() {
             new_measurement.measurement.push(Point {
-                length_of_string: (point.length_of_string as f32).log2() as usize,
+                size: (point.size as f32).log2() as usize,
                 time: Duration::from_micros((point.time.as_micros() as f32).log2() as u64),
             });
         }
@@ -259,7 +272,7 @@ impl Measurement {
     }
 }
 
-impl Measurements<'_> {
+impl Measurements {
     pub fn max_time(&self) -> Duration {
         self.measurements
             .iter()
@@ -295,7 +308,6 @@ impl Measurements<'_> {
     pub fn log_scale(&self) -> Self {
         let mut new_measurements = Measurements {
             measurements: Vec::with_capacity(self.measurements.len()),
-            input: self.input,
             relative_error: self.relative_error,
             resolution: self.resolution,
         };

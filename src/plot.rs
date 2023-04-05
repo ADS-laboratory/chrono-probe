@@ -1,3 +1,4 @@
+use crate::input::{Input, InputBuilder};
 use crate::measurements::{Measurements, Point};
 use plotters::prelude::*;
 
@@ -32,25 +33,18 @@ use plotters::prelude::*;
 /// time_plot("plot.svg", measurements);
 /// fs::remove_file("plot.svg").unwrap();
 /// ```
-pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
+pub fn time_plot<I: Input>(
+    file_name: &str,
+    measurements_struct: Measurements,
+    builder: InputBuilder<I>,
+) {
     let x_min = measurements_struct.min_length() as u32;
     let x_max = measurements_struct.max_length() as u32;
     let y_min = measurements_struct.min_time().as_micros() as u32;
     let y_max = measurements_struct.max_time().as_micros() as u32;
 
     let mut measurements = measurements_struct.measurements;
-    let generation_method = measurements_struct
-        .input
-        .builder
-        .generation_method
-        .function
-        .name;
-    let distribution_name = measurements_struct
-        .input
-        .builder
-        .distribution
-        .length_distribution_fn
-        .name;
+    let distribution_name = builder.distribution.length_distribution_name;
 
     println!("\nPlotting...\n");
 
@@ -60,10 +54,15 @@ pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
 
     let (upper, lower) = root.split_vertically(750);
 
-    lower.titled(
-        &format!("Fractional period time complexity test using {} length distribution and {} method for string generation", generation_method, distribution_name),
-        ("sans-serif", 10).into_font().color(&BLACK.mix(0.5)),
-    ).unwrap();
+    lower
+        .titled(
+            &format!(
+                "Fractional period time complexity test using {} method for string generation",
+                distribution_name
+            ),
+            ("sans-serif", 10).into_font().color(&BLACK.mix(0.5)),
+        )
+        .unwrap();
 
     let mut chart = ChartBuilder::on(&upper)
         .caption(
@@ -85,22 +84,19 @@ pub fn time_plot(file_name: &str, measurements_struct: Measurements) {
 
     // draw data for each algorithm
     for (i, measurement) in measurements.iter_mut().enumerate() {
-        measurement.measurement.sort_by_key(|a| a.length_of_string);
+        measurement.measurement.sort_by_key(|a| a.size);
 
         let color = Palette99::pick(i).mix(0.9);
         chart
             .draw_series(LineSeries::new(
-                measurement.measurement.iter().map(
-                    |&Point {
-                         length_of_string,
-                         time,
-                         ..
-                     }| (length_of_string as u32, time.as_micros() as u32),
-                ),
+                measurement
+                    .measurement
+                    .iter()
+                    .map(|&Point { size, time, .. }| (size as u32, time.as_micros() as u32)),
                 color.stroke_width(3),
             ))
             .unwrap()
-            .label(measurement.algorithm_name)
+            .label(&measurement.algorithm_name)
             .legend(move |(x, y)| Rectangle::new([(x, y - 5), (x + 10, y + 5)], color.filled()));
     }
 
