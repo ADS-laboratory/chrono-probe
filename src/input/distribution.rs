@@ -1,8 +1,15 @@
 use rand::{thread_rng, Rng};
 use serde::Serialize;
 
+/// Distribution of the lengths of the strings
+pub struct DistributionSet {
+    // Vector of the lengths of the strings
+    pub lengths: Vec<usize>,
+}
+
+/// Struct that let you build the [DistributionSet]
 #[derive(Serialize)]
-pub struct Distribution {
+pub struct DistributionBuilder {
     #[serde(skip_serializing)]
     pub length_distribution_fn: fn(n: usize, min: f64, max: f64) -> Vec<usize>,
     pub(crate) length_distribution_name: String,
@@ -10,7 +17,7 @@ pub struct Distribution {
     pub max_value: f64,
 }
 
-impl Distribution {
+impl DistributionBuilder {
     /// Creates a new distribution
     ///
     /// # Arguments
@@ -24,14 +31,14 @@ impl Distribution {
     /// ```
     /// use time_complexity_plot::random::lengths::{Distribution, EXPONENTIAL};
     ///
-    /// let length_distribution = Distribution::new(EXPONENTIAL, 1000, 500_000);
+    /// let length_distribution = DistributionBuilder::new(EXPONENTIAL, 1000, 500_000);
     /// ```
     pub fn new(
         length_distribution_fn: fn(n: usize, min: f64, max: f64) -> Vec<usize>,
         min_value: i32,
         max_value: i32,
     ) -> Self {
-        Distribution {
+        DistributionBuilder {
             length_distribution_fn,
             length_distribution_name: format!("{:?}", length_distribution_fn),
             min_value: min_value as f64,
@@ -39,7 +46,7 @@ impl Distribution {
         }
     }
 
-    /// Creates a vector of lengths of strings using the distribution specified in the struct
+    /// Creates a [DistributionSet] that contains the vector of input lengths generated using the distribution function.
     ///
     /// # Arguments
     ///
@@ -48,16 +55,19 @@ impl Distribution {
     /// # Panics
     ///
     /// * Panics if the number of lengths to be generated is less than 1
-    pub fn create_length_set(&self, n: usize) -> Vec<usize> {
+    pub fn build(&self, n: usize) -> DistributionSet {
         assert!(
             n > 0,
             "The number of lengths to be generated must be greater than 0"
         );
-        (self.length_distribution_fn)(n, self.min_value, self.max_value)
+        DistributionSet {
+            lengths: (self.length_distribution_fn)(n, self.min_value, self.max_value),
+        }
     }
 }
 
 // Some distributions
+// TODO: move these const below to an example?
 
 /// Uniform distribution of lengths
 pub const UNIFORM: fn(n: usize, min: f64, max: f64) -> Vec<usize> = uniform_length_set;

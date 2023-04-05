@@ -44,7 +44,7 @@ pub fn time_plot<I: Input>(
     let y_max = measurements_struct.max_time().as_micros() as u32;
 
     let mut measurements = measurements_struct.measurements;
-    let distribution_name = builder.distribution.length_distribution_name;
+    let distribution_name = builder.distribution_builder.length_distribution_name;
 
     println!("\nPlotting...\n");
 

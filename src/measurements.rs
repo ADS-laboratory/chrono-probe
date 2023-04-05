@@ -1,4 +1,4 @@
-use crate::input::{Input, InputStruct};
+use crate::input::{Input, InputSet};
 use serde::Serialize;
 use std::fs::File;
 use std::time::{Duration, Instant};
@@ -123,7 +123,7 @@ fn get_time_same_length<I: Input + Clone, O>(
 /// * `resolution` - The resolution of the clock
 fn get_times<I: Input + Clone, O>(
     f: &fn(I) -> O,
-    inputs: &InputStruct<I>,
+    inputs: &InputSet<I>,
     relative_error: f32,
     resolution: Duration,
 ) -> Measurement {
@@ -174,7 +174,7 @@ fn get_times<I: Input + Clone, O>(
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```
 pub fn measure<I: Input + Clone, O>(
-    inputs: &InputStruct<I>,
+    inputs: &InputSet<I>,
     algorithms: &Vec<fn(I) -> O>,
     relative_error: f32,
 ) -> Measurements {
