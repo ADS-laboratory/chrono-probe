@@ -27,9 +27,9 @@ pub struct InputBuilder<I: Input> {
 
 impl<I: Input> InputBuilder<I> {
     /// Creates a new [InputBuilder].
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `distribution` - The builder of the distribuition that will be used to generate the inputs.
     /// * `builder` - The builder that will be used to generate the inputs.
     pub fn new(distribution_builder: DistributionBuilder, builder: I::Builder) -> InputBuilder<I> {
@@ -40,9 +40,9 @@ impl<I: Input> InputBuilder<I> {
     }
 
     /// Generates the inputs.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `n` - The number of inputs to be generated.
     pub fn build(&self, n: usize) -> InputSet<I> {
         self.build_with_repetitions(n, 1)
@@ -50,9 +50,9 @@ impl<I: Input> InputBuilder<I> {
 
     /// Generates the inputs with repetitions (i.e. multiple inputs with the same size).
     /// This can be useful in order to obtain a more accurate result.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `n` - The number of inputs to be generated (exluding repetitions: the actual amount of inputs generated is n*repetitions).
     /// * `repetitions` - The number of repetitions for each input size.
     pub fn build_with_repetitions(&self, n: usize, repetitions: usize) -> InputSet<I> {

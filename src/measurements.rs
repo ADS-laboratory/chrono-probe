@@ -3,19 +3,19 @@ use serde::Serialize;
 use std::fs::File;
 use std::time::{Duration, Instant};
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct Point {
     pub size: usize,
     pub time: Duration,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct Measurement {
     pub algorithm_name: String,
     pub measurement: Vec<Point>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct Measurements {
     pub measurements: Vec<Measurement>,
     pub relative_error: f32,
