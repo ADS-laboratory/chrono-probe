@@ -3,7 +3,8 @@ use std::fs::File;
 
 use self::distribution::*;
 
-pub mod distribution; // TODO: maybe it does not need to be pub
+pub mod distribution;
+pub mod implementations;
 
 /// Trait that must be implemented by algorithms' input types.
 pub trait Input {
