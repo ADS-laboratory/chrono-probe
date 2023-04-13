@@ -4,7 +4,7 @@ use std::fs::File;
 use self::distribution::*;
 
 pub mod distribution;
-pub mod implementations;
+pub mod impls;
 
 /// Trait that must be implemented by algorithms' input types.
 pub trait Input {
