@@ -3,26 +3,24 @@ extern crate core;
 mod algorithms;
 mod input;
 
-use crate::algorithms::{merge_sort_benchmark, quick_sort_benchmark};
+use crate::algorithms::{merge_sort_input, quick_sort_input};
 
 use time_complexity_plot::{
     input::{distribution::DistributionBuilder, impls::distribution::EXPONENTIAL, InputBuilder},
-    measurements::measure,
+    measurements::measure_mut,
     plot::time_plot,
 };
 
 fn main() {
     let length_distribution = DistributionBuilder::new(EXPONENTIAL, 1000, 500_000);
 
-    // let string_gen = StringGen::new(StringGenFunction::CreateRandomString1, vec![b'a', b'b']);
+    let vector_builder = InputBuilder::new(length_distribution, ());
 
-    let string_builder = InputBuilder::new(length_distribution, ());
+    let mut vectors = vector_builder.build_with_repetitions(200, 10);
 
-    let strings = string_builder.build_with_repetitions(200, 10);
+    let algorithms = &[merge_sort_input, quick_sort_input];
 
-    let algorithms = &[merge_sort_benchmark, quick_sort_benchmark];
-
-    let results = measure(&strings, algorithms, 0.00001);
+    let results = measure_mut(&mut vectors, algorithms, 0.00001);
 
     let file_name = "plotters-doc-data/tick_control.svg";
 
@@ -36,5 +34,5 @@ fn main() {
     }
      */
 
-    time_plot(file_name, results, string_builder);
+    time_plot(file_name, results, vector_builder);
 }

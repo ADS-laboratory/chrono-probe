@@ -1,8 +1,7 @@
-use crate::input::Vector;
+use crate::input::InputVec;
 
-// merge sort
-pub fn merge_sort_benchmark(v: Vector) {
-    merge_sort(&mut v.clone());
+pub fn merge_sort_input(v: &mut InputVec) {
+    merge_sort(v)
 }
 
 pub fn merge_sort<T: Ord + Clone>(v: &mut Vec<T>) {
@@ -17,7 +16,7 @@ pub fn merge_sort<T: Ord + Clone>(v: &mut Vec<T>) {
     }
 }
 
-fn merge<T: Ord + Clone>(v: &mut Vec<T>, left: &Vec<T>, right: &Vec<T>) {
+fn merge<T: Ord + Clone>(v: &mut [T], left: &Vec<T>, right: &Vec<T>) {
     let mut i = 0;
     let mut j = 0;
     let mut k = 0;
@@ -43,9 +42,8 @@ fn merge<T: Ord + Clone>(v: &mut Vec<T>, left: &Vec<T>, right: &Vec<T>) {
     }
 }
 
-// quick sort
-pub fn quick_sort_benchmark(v: Vector) {
-    quick_sort(&mut v.clone());
+pub fn quick_sort_input(v: &mut InputVec) {
+    quick_sort(v)
 }
 
 pub fn quick_sort<T: Ord + Clone>(v: &mut Vec<T>) {
@@ -60,7 +58,7 @@ fn quick_sort_rec<T: Ord + Clone>(v: &mut Vec<T>, low: usize, high: usize) {
     }
 }
 
-fn partition<T: Ord + Clone>(v: &mut Vec<T>, low: usize, high: usize) -> usize {
+fn partition<T: Ord + Clone>(v: &mut [T], low: usize, high: usize) -> usize {
     let pivot = v[high].clone();
     let mut i = low;
     for j in low..high {
@@ -70,5 +68,5 @@ fn partition<T: Ord + Clone>(v: &mut Vec<T>, low: usize, high: usize) -> usize {
         }
     }
     v.swap(i, high);
-    return i;
+    i
 }

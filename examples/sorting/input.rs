@@ -34,6 +34,6 @@ impl Input for Vector {
             let rand: i8 = rng.gen();
             v.push(rand);
         }
-        return InputVec(v);
+        InputVec(v)
     }
 }
