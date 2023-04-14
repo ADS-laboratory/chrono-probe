@@ -51,12 +51,15 @@ fn get_average_resolution() -> Duration {
 /// * `string` - The string to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_time<I: Input + Clone, O>(
-    f: &fn(I) -> O,
+fn get_time<I: Input + Clone, O, Alg>(
+    f: Alg,
     input: I,
     relative_error: f32,
     resolution: Duration,
-) -> Duration {
+) -> Duration
+where
+    Alg: Fn(I) -> O,
+{
     let mut n = 0;
     // The minimum time measurable
     let min_time_measurable = resolution * ((1.0 / relative_error) + 1.0) as u32;
@@ -95,12 +98,15 @@ fn get_time<I: Input + Clone, O>(
 /// * `strings` - The vector of strings to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_time_same_length<I: Input + Clone, O>(
-    f: &fn(I) -> O,
+fn get_time_same_length<I: Input + Clone, O, Alg>(
+    f: &Alg,
     inputs: &Vec<I>,
     relative_error: f32,
     resolution: Duration,
-) -> Point {
+) -> Point
+where
+    Alg: Fn(I) -> O,
+{
     let mut total_time = Duration::ZERO;
     let size = inputs[0].get_size();
     for input in inputs {
@@ -121,12 +127,15 @@ fn get_time_same_length<I: Input + Clone, O>(
 /// * `strings` - The vector of strings to pass to the function
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
-fn get_times<I: Input + Clone, O>(
-    f: &fn(I) -> O,
+fn get_times<I: Input + Clone, O, Alg>(
+    f: &Alg,
     inputs: &InputSet<I>,
     relative_error: f32,
     resolution: Duration,
-) -> Measurement {
+) -> Measurement
+where
+    Alg: Fn(I) -> O,
+{
     let n = inputs.inputs.len();
     let mut times = Vec::with_capacity(n);
     for (_i, input) in inputs.inputs.iter().enumerate() {
@@ -140,7 +149,7 @@ fn get_times<I: Input + Clone, O>(
         }
     }
     Measurement {
-        algorithm_name: format!("{:?}", f),
+        algorithm_name: "ciao".to_string(),
         measurement: times,
     }
 }
@@ -173,11 +182,14 @@ fn get_times<I: Input + Clone, O>(
 /// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
 /// let measurements = measure(&strings, &algorithms, 0.01);
 /// ```
-pub fn measure<I: Input + Clone, O>(
+pub fn measure<I: Input + Clone, O, Alg>(
     inputs: &InputSet<I>,
-    algorithms: &Vec<fn(I) -> O>,
+    algorithms: &[Alg],
     relative_error: f32,
-) -> Measurements {
+) -> Measurements
+where
+    Alg: Fn(I) -> O,
+{
     assert!(relative_error > 0.0, "Relative error must be positive");
     let resolution = get_average_resolution();
     let mut results = Vec::with_capacity(algorithms.len());
