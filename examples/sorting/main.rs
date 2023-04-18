@@ -6,13 +6,13 @@ mod input;
 use crate::algorithms::{merge_sort_input, quick_sort_input};
 
 use time_complexity_plot::{
-    input::{distribution::DistributionBuilder, impls::distribution::EXPONENTIAL, InputBuilder},
+    input::{distribution::Exponential, InputBuilder},
     measurements::measure_mut,
     plot::time_plot,
 };
 
 fn main() {
-    let length_distribution = DistributionBuilder::new(EXPONENTIAL, 1000, 500_000);
+    let length_distribution = Exponential::new(1000..=500_000);
 
     let vector_builder = InputBuilder::new(length_distribution, ());
 
