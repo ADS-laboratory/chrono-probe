@@ -1,66 +1,121 @@
-use serde::Serialize;
+use rand::{thread_rng, Rng};
+use std::{fmt::Display, ops::RangeInclusive};
 
-/// Distribution of the lengths of the strings
-pub struct DistributionSet {
-    // Vector of the lengths of the strings
-    pub lengths: Vec<usize>,
+pub trait Distribution: Display {
+    fn generate(&self, n: usize) -> Vec<usize>;
 }
 
-/// Struct that let you build the [DistributionSet]
-#[derive(Serialize)]
-pub struct DistributionBuilder {
-    #[serde(skip_serializing)]
-    pub length_distribution_fn: fn(n: usize, min: f64, max: f64) -> Vec<usize>,
-    pub(crate) length_distribution_name: String,
-    pub min_value: f64,
-    pub max_value: f64,
+pub struct Uniform {
+    range: RangeInclusive<usize>,
 }
 
-impl DistributionBuilder {
-    /// Creates a new distribution
-    ///
-    /// # Arguments
-    ///
-    /// * `length_distribution` - The distribution of the lengths of the strings
-    /// * `min_value` - The minimum value of the length of the strings
-    /// * `max_value` - The maximum value of the length of the strings
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use time_complexity_plot::random::lengths::{Distribution, EXPONENTIAL};
-    ///
-    /// let length_distribution = DistributionBuilder::new(EXPONENTIAL, 1000, 500_000);
-    /// ```
-    pub fn new(
-        length_distribution_fn: fn(n: usize, min: f64, max: f64) -> Vec<usize>,
-        min_value: i32,
-        max_value: i32,
-    ) -> Self {
-        DistributionBuilder {
-            length_distribution_fn,
-            length_distribution_name: format!("{:?}", length_distribution_fn),
-            min_value: min_value as f64,
-            max_value: max_value as f64,
-        }
+impl Uniform {
+    pub fn new(range: RangeInclusive<usize>) -> Self {
+        Uniform { range }
     }
+}
 
-    /// Creates a [DistributionSet] that contains the vector of input lengths generated using the distribution function.
-    ///
-    /// # Arguments
-    ///
-    /// * `n` - The number of lengths to be generated
-    ///
-    /// # Panics
-    ///
-    /// * Panics if the number of lengths to be generated is less than 1
-    pub fn build(&self, n: usize) -> DistributionSet {
-        assert!(
-            n > 0,
-            "The number of lengths to be generated must be greater than 0"
-        );
-        DistributionSet {
-            lengths: (self.length_distribution_fn)(n, self.min_value, self.max_value),
+impl Display for Uniform {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Uniform")
+    }
+}
+
+impl Distribution for Uniform {
+    fn generate(&self, n: usize) -> Vec<usize> {
+        let mut lengths = Vec::with_capacity(n);
+        let a = self.range.start();
+        let b = (self.range.end() - self.range.start()) / n;
+        for i in 0..n {
+            let x = a + b * i;
+            lengths.push(x);
         }
+        lengths
+    }
+}
+
+pub struct UniformRandom {
+    range: RangeInclusive<usize>,
+}
+
+impl UniformRandom {
+    pub fn new(range: RangeInclusive<usize>) -> Self {
+        UniformRandom { range }
+    }
+}
+
+impl Display for UniformRandom {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "UniformRandom")
+    }
+}
+
+impl Distribution for UniformRandom {
+    fn generate(&self, n: usize) -> Vec<usize> {
+        let mut lengths = Vec::with_capacity(n);
+        for _ in 0..n {
+            lengths.push(thread_rng().gen_range(self.range.clone()));
+        }
+        lengths
+    }
+}
+
+// TODO: Maybe add a lambda parameter
+pub struct Exponential {
+    range: RangeInclusive<usize>,
+}
+
+impl Exponential {
+    pub fn new(range: RangeInclusive<usize>) -> Self {
+        Exponential { range }
+    }
+}
+
+impl Display for Exponential {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Exponential")
+    }
+}
+
+impl Distribution for Exponential {
+    fn generate(&self, n: usize) -> Vec<usize> {
+        let mut lengths = Vec::with_capacity(n);
+        let a = *self.range.start() as f64;
+        let b = ((self.range.end() / self.range.start()) as f64).powf(1.0 / n as f64);
+        for i in 0..n {
+            let x = a * b.powf(i as f64);
+            lengths.push(x as usize);
+        }
+        lengths
+    }
+}
+
+pub struct ExponentialRandom {
+    range: RangeInclusive<usize>,
+}
+
+impl ExponentialRandom {
+    pub fn new(range: RangeInclusive<usize>) -> Self {
+        ExponentialRandom { range }
+    }
+}
+
+impl Display for ExponentialRandom {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ExponentialRandom")
+    }
+}
+
+impl Distribution for ExponentialRandom {
+    fn generate(&self, n: usize) -> Vec<usize> {
+        let mut lengths = Vec::with_capacity(n);
+        let a = *self.range.start() as f64;
+        let b = ((self.range.end() / self.range.start()) as f64).powf(1.0 / n as f64);
+        for _ in 0..n {
+            let x: f64 = thread_rng().gen::<f64>();
+            let scaled_x = a * b.powf(x);
+            lengths.push(scaled_x as usize);
+        }
+        lengths
     }
 }

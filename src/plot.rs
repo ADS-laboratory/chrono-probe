@@ -1,3 +1,4 @@
+use crate::input::distribution::Distribution;
 use crate::input::{Input, InputBuilder};
 use crate::measurements::{Measurements, Point};
 use plotters::prelude::*;
@@ -33,10 +34,10 @@ use plotters::prelude::*;
 /// time_plot("plot.svg", measurements);
 /// fs::remove_file("plot.svg").unwrap();
 /// ```
-pub fn time_plot<I: Input>(
+pub fn time_plot<I: Input, D: Distribution>(
     file_name: &str,
     measurements_struct: Measurements,
-    builder: InputBuilder<I>,
+    builder: InputBuilder<I, D>,
 ) {
     let x_min = measurements_struct.min_length() as u32;
     let x_max = measurements_struct.max_length() as u32;
@@ -44,7 +45,7 @@ pub fn time_plot<I: Input>(
     let y_max = measurements_struct.max_time().as_micros() as u32;
 
     let mut measurements = measurements_struct.measurements;
-    let distribution_name = builder.distribution_builder.length_distribution_name;
+    let distribution_name = format!("{}", builder.distribution);
 
     println!("\nPlotting...\n");
 

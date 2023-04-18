@@ -4,7 +4,6 @@ use std::fs::File;
 use self::distribution::*;
 
 pub mod distribution;
-pub mod impls;
 
 /// Trait that must be implemented by algorithms' input types.
 pub trait Input {
@@ -21,21 +20,21 @@ pub struct InputSet<I: Input> {
 
 /// Struct that let you build the [InputSet].
 #[derive(Serialize)]
-pub struct InputBuilder<I: Input> {
-    pub(crate) distribution_builder: DistributionBuilder,
+pub struct InputBuilder<I: Input, D: Distribution> {
+    pub(crate) distribution: D,
     pub(crate) builder: I::Builder,
 }
 
-impl<I: Input> InputBuilder<I> {
+impl<I: Input, D: Distribution> InputBuilder<I, D> {
     /// Creates a new [InputBuilder].
     ///
     /// # Arguments
     ///
     /// * `distribution` - The builder of the distribuition that will be used to generate the inputs.
     /// * `builder` - The builder that will be used to generate the inputs.
-    pub fn new(distribution_builder: DistributionBuilder, builder: I::Builder) -> InputBuilder<I> {
+    pub fn new(distribution: D, builder: I::Builder) -> InputBuilder<I, D> {
         InputBuilder {
-            distribution_builder,
+            distribution,
             builder,
         }
     }
@@ -66,7 +65,7 @@ impl<I: Input> InputBuilder<I> {
             "The number of repetitions must be greater than 0"
         );
         let mut inputs = Vec::new();
-        let length_distribution = self.distribution_builder.build(n).lengths;
+        let length_distribution = self.distribution.generate(n);
         #[cfg(feature = "debug")]
         println!("Generating inputs...\n");
         for (_j, input_size) in length_distribution.into_iter().enumerate() {
@@ -91,4 +90,64 @@ impl<I: Input + Serialize> InputSet<I> {
         let mut file = File::create(filename).unwrap();
         serde_json::to_writer(&mut file, &self).unwrap();
     }
+}
+
+/// Implements Input for the given type using the given closure to get the size of the input.
+/// Useful for not having to create a wrapper for built-in data types.
+///
+/// # Syntax
+///
+/// (`$generate_input_closure`)(`$builder`) -> `$input`, `$get_size_closure`
+///
+/// # Arguments
+///
+/// * `$generate_input_closure` - The closure that will be used to generate the input through the builder.
+///     (`|usize, $builder| -> $built_in_type`)
+/// * `$builder` - The type of the builder that will be used to generate the input.
+/// * `$input` - The type to implement [Input](crate::input::Input) for.
+/// * `$get_size_closure` - The closure that will be used to get the size of the input.
+///     (`|$built_in_type| -> usize`)
+///
+/// # Example
+///
+/// ```
+/// impl_input!(Vec<i32>, |v: Vec<i32>| v.len());
+/// ```
+#[macro_export]
+macro_rules! impl_input {
+    (($generate_input_closure:expr)($builder:ty) -> $input:ty, $get_size_closure:expr) => {
+        /// Implementation of "Input" for $built_in_type
+        impl $crate::input::Input for $input {
+            type Builder<'a> = $builder;
+
+            /// Gets the size of the input.
+            fn get_size(&self) -> usize {
+                $get_size_closure(self.clone())
+            }
+
+            /// Generates an input of the given size using the given builder.
+            ///
+            /// # Arguments
+            ///
+            /// * `size` - The size of the input to be generated.
+            /// * `builder` - The builder that will be used to generate the input (it's basically a function).
+            ///
+            /// # Example
+            ///
+            /// ```
+            /// use time_complexity_plot::input::Input;
+            ///
+            /// struct VecBuilder<'a> {
+            ///     func: &'a fn(usize) -> Vec<i32>,
+            /// }
+            ///
+            /// impl_input!( (|size: usize, builder: VecBuilder| (builder.func)(size))(VecBuilder<'a>) -> Vec<i32>, |v: Vec<i32>| v.len());
+            /// let builder: VecBuilder = todo!();
+            /// let input = Vec::<i32>::generate_input(10, builder);
+            /// ```
+            fn generate_input(size: usize, builder: Self::Builder) -> Self {
+                $generate_input_closure(size, builder)
+            }
+        }
+    };
 }
