@@ -9,31 +9,8 @@ use plotters::prelude::*;
 ///
 /// * `file_name` - The name of the file to save the plot to
 /// * `measurements_struct` - The measurements to plot
+/// * `builder` - The builder that was used to generate the measurements
 ///
-/// # Example
-///
-/// ```
-/// use std::fs;
-/// use time_complexity_plot::{
-///     algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
-///     measurements::measure,
-///     random::{
-///         lengths::{LengthDistribution, EXPONENTIAL},
-///         strings::{StringGen, METHOD1},
-///         StringsBuilder,
-///     },
-///     plot::time_plot,
-/// };
-///
-/// let length_distribution = LengthDistribution::new(EXPONENTIAL, 1000, 500_000);
-/// let string_gen = StringGen::new(METHOD1, vec!['a', 'b']);
-/// let strings_builder = StringsBuilder::new(length_distribution, string_gen);
-/// let strings = strings_builder.create_random_strings(100);
-/// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
-/// let measurements = measure(&strings, &algorithms, 0.01);
-/// time_plot("plot.svg", measurements);
-/// fs::remove_file("plot.svg").unwrap();
-/// ```
 pub fn time_plot<I: Input, D: Distribution>(
     file_name: &str,
     measurements_struct: Measurements,

@@ -201,7 +201,7 @@ where
         }
     }
     Measurement {
-        algorithm_name: "ciao".to_string(),
+        algorithm_name: get_algorithm_name(f),
         measurement: times,
     }
 }
@@ -229,7 +229,7 @@ where
         }
     }
     Measurement {
-        algorithm_name: "ciao".to_string(),
+        algorithm_name: get_algorithm_name_mut(f),
         measurement: times,
     }
 }
@@ -242,26 +242,6 @@ where
 /// * `algorithms` - The vector of functions to measure
 /// * `relative_error` - The required relative error of the measurements
 ///
-/// # Example
-///
-/// ```
-/// use time_complexity_plot::{
-///     algorithms::{PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART},
-///     measurements::measure,
-///     random::{
-///         lengths::{LengthDistribution, EXPONENTIAL},
-///         strings::{StringGen, METHOD1},
-///         StringsBuilder,
-///     },
-/// };
-///
-/// let length_distribution = LengthDistribution::new(EXPONENTIAL, 1000, 500_000);
-/// let string_gen = StringGen::new(METHOD1, vec!['a', 'b']);
-/// let strings_builder = StringsBuilder::new(length_distribution, string_gen);
-/// let strings = strings_builder.create_random_strings(100);
-/// let algorithms = vec![PERIOD_NAIVE1, PERIOD_NAIVE2, PERIOD_SMART];
-/// let measurements = measure(&strings, &algorithms, 0.01);
-/// ```
 pub fn measure<I, O, Alg>(
     inputs: &InputSet<I>,
     algorithms: &[Alg],
@@ -277,8 +257,8 @@ where
     for (_i, algorithm) in algorithms.iter().enumerate() {
         #[cfg(feature = "debug")]
         println!(
-            "\n\nProcessing {:?} ({}/{})...\n",
-            algorithm,
+            "\n\nProcessing {} ({}/{})...\n",
+            get_algorithm_name(algorithm),
             _i + 1,
             algorithms.len()
         );
@@ -307,8 +287,8 @@ where
     for (_i, algorithm) in algorithms.iter().enumerate() {
         #[cfg(feature = "debug")]
         println!(
-            "\n\nProcessing {:?} ({}/{})...\n",
-            algorithm,
+            "\n\nProcessing {} ({}/{})...\n",
+            get_algorithm_name_mut(algorithm),
             _i + 1,
             algorithms.len()
         );
@@ -444,4 +424,24 @@ impl Measurements {
         let mut file = File::create(filename).unwrap();
         serde_json::to_writer(&mut file, &self).unwrap();
     }
+}
+
+fn get_algorithm_name<Alg, I, O>(_: Alg) -> String
+where
+    Alg: Fn(&I) -> O,
+{
+    let path_name = std::any::type_name::<Alg>();
+    // Remove the module path
+    let name = path_name.split("::").last().unwrap();
+    name.into()
+}
+
+fn get_algorithm_name_mut<Alg, I, O>(_: Alg) -> String
+where
+    Alg: Fn(&mut I) -> O,
+{
+    let path_name = std::any::type_name::<Alg>();
+    // Remove the module path
+    let name = path_name.split("::").last().unwrap();
+    name.into()
 }
