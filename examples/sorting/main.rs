@@ -12,7 +12,7 @@ use time_complexity_plot::{
 };
 
 fn main() {
-    let length_distribution = Exponential::new(1000..=500_000);
+    let length_distribution = Exponential::new(1000..=500_000, 1.0);
 
     let vector_builder = InputBuilder::new(length_distribution, ());
 
