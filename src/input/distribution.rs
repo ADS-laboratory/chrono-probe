@@ -1,15 +1,35 @@
 use rand::{thread_rng, Rng};
 use std::{fmt::Display, ops::RangeInclusive};
 
+// =====================
+// = THE MODULE ITSELF =
+// =====================
+
+/// This trait defines a Distribution in an abstract way.
+/// 
+/// Without implementing lower level mechanisms this trait defines the shared behaviour of a
+/// distribution, i.e. the property of being able to generate the input sizes.
 pub trait Distribution: Display {
     fn generate(&self, n: usize) -> Vec<usize>;
 }
 
+// ==============================
+// = PREDEFINED IMPLEMENTATIONS =
+// ==============================
+
+/// The struct representing an uniform distribution.
+/// 
+/// Given a range, it generates a vector of equidistant input sizes.
 pub struct Uniform {
     range: RangeInclusive<usize>,
 }
 
 impl Uniform {
+    /// Creates a new uniform distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
         Uniform { range }
     }
@@ -22,23 +42,54 @@ impl Display for Uniform {
 }
 
 impl Distribution for Uniform {
+    /// Generates a vector of input sizes using an uniform distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `n` - The number of input sizes to generate.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use time_complexity_plot::input::distribution::*;
+    /// 
+    /// let uniform = Uniform::new(1..=100);
+    /// let lengths = uniform.generate(10);
+    /// println!("{:?}", lengths);
+    /// ```
     fn generate(&self, n: usize) -> Vec<usize> {
+        // Preallocating the vector of input sizes
         let mut lengths = Vec::with_capacity(n);
+
+        // Computing the step
         let a = self.range.start();
         let b = (self.range.end() - self.range.start()) / (n - 1);
+
+        // Generating the input sizes using the step
         for i in 0..n {
             let x = a + b * i;
             lengths.push(x);
         }
+
+        // Returning the vector of input sizes
         lengths
     }
 }
 
+/// The struct representing a uniform random distribution.
+/// 
+/// Given a range, it generates a vector of random input sizes (uniform because all input
+/// sizes have an equal probability of appearing in the generated vector).
 pub struct UniformRandom {
     range: RangeInclusive<usize>,
 }
 
 impl UniformRandom {
+    /// Creates a new uniform random distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
         UniformRandom { range }
     }
@@ -51,8 +102,25 @@ impl Display for UniformRandom {
 }
 
 impl Distribution for UniformRandom {
+    /// Generates a vector of input sizes using an uniform random distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `n` - The number of input sizes to generate.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use time_complexity_plot::input::distribution::*;
+    /// 
+    /// let uniform_random = UniformRandom::new(1..=100);
+    /// let lengths = uniform_random.generate(10);
+    /// println!("{:?}", lengths);
     fn generate(&self, n: usize) -> Vec<usize> {
+        // Preallocating the vector of input sizes
         let mut lengths = Vec::with_capacity(n);
+
+        // Generating the input sizes using the functions provided by rand crate
         for _ in 0..n {
             lengths.push(thread_rng().gen_range(self.range.clone()));
         }
@@ -60,12 +128,22 @@ impl Distribution for UniformRandom {
     }
 }
 
+/// The struct representing an exponential distribution.
+/// 
+/// Given a range and a &lambda;, it generates a vector of input sizes using an exponential
+/// distribution.
 pub struct Exponential {
     range: RangeInclusive<usize>,
     lambda: f64,
 }
 
 impl Exponential {
+    /// Creates a new exponential distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `range` - The range of the distribution.
+    /// * `lambda` - The &lambda; parameter of the distribution (expected value will be 1/&lambda;).
     pub fn new(range: RangeInclusive<usize>, lambda: f64) -> Self {
         Exponential { range, lambda }
     }
@@ -78,8 +156,25 @@ impl Display for Exponential {
 }
 
 impl Distribution for Exponential {
+    /// Generates a vector of input sizes using an exponential distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `n` - The number of input sizes to generate.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use time_complexity_plot::input::distribution::*;
+    /// 
+    /// let exponential = Exponential::new(1..=100, 0.5);
+    /// let lengths = exponential.generate(10);
+    /// println!("{:?}", lengths);
+    /// ```
     fn generate(&self, n: usize) -> Vec<usize> {
+        // Preallocating the vector of input sizes
         let mut lengths = Vec::with_capacity(n);
+        
         for i in 0..n {
             let x: f64 = i as f64 / (n - 1) as f64;
             let exp_x = exp_distribution(
@@ -94,12 +189,23 @@ impl Distribution for Exponential {
     }
 }
 
+/// The struct representing an exponential random distribution.
+/// 
+/// Given a range and a &lambda;, it generates a vector of random input sizes using an
+/// exponential distribution. This means that the probability of appearing  in the
+/// output of a specific input size n will decrease as n increases.
 pub struct ExponentialRandom {
     range: RangeInclusive<usize>,
     lambda: f64,
 }
 
 impl ExponentialRandom {
+    /// Creates a new exponential random distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `range` - The range of the distribution.
+    /// * `lambda` - The &lambda; parameter of the distribution (expected value will be 1/&lambda;).
     pub fn new(range: RangeInclusive<usize>, lambda: f64) -> Self {
         ExponentialRandom { range, lambda }
     }
@@ -112,8 +218,25 @@ impl Display for ExponentialRandom {
 }
 
 impl Distribution for ExponentialRandom {
+    /// Generates a vector of input sizes using an exponential random distribution.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `n` - The number of input sizes to generate.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use time_complexity_plot::input::distribution::*;
+    /// 
+    /// let exponential_random = ExponentialRandom::new(1..=100, 0.5);
+    /// let lengths = exponential_random.generate(10);
+    /// println!("{:?}", lengths);
+    /// ```
     fn generate(&self, n: usize) -> Vec<usize> {
+        // Preallocating the vector of input sizes
         let mut lengths = Vec::with_capacity(n);
+
         for _ in 0..n {
             let x: f64 = thread_rng().gen::<f64>();
             let exp_x = exp_distribution(
@@ -128,6 +251,7 @@ impl Distribution for ExponentialRandom {
     }
 }
 
+/// Helper function to generate an exponential distribution.
 fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
     let a = (-lambda * min).exp();
     let b = (-lambda * max).exp();
