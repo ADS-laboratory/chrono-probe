@@ -67,6 +67,7 @@ pub struct Exponential {
 
 impl Exponential {
     pub fn new(range: RangeInclusive<usize>, lambda: f64) -> Self {
+        assert!(lambda > 0.0, "Lambda must be grater then zero");
         Exponential { range, lambda }
     }
 }
@@ -101,6 +102,7 @@ pub struct ExponentialRandom {
 
 impl ExponentialRandom {
     pub fn new(range: RangeInclusive<usize>, lambda: f64) -> Self {
+        assert!(lambda > 0.0, "Lambda must be grater then zero");
         ExponentialRandom { range, lambda }
     }
 }
