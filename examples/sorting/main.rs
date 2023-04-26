@@ -1,7 +1,7 @@
 extern crate core;
 
 mod algorithms;
-mod input;
+mod ;
 
 use crate::algorithms::{merge_sort_input, quick_sort_input};
 
