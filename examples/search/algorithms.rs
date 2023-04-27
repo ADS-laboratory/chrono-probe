@@ -1,3 +1,5 @@
+use crate::input::InputSortedVec;
+
 /// Linear search algorithm
 ///
 /// # Arguments
@@ -17,7 +19,7 @@ pub fn linear_search<T: Ord>(v: &Vec<T>, val: T) -> Option<usize> {
 }
 
 /// Implementation of linear search algorithm for a vector of i8
-pub fn linear_search_input(v: & InputVec, val: usize) -> Option<usize> {
+pub fn linear_search_input(v: &InputSortedVec, val: i8) -> Option<usize> {
     linear_search(v, val)
 }
 
@@ -46,6 +48,6 @@ pub fn binary_search<T: Ord>(v: &Vec<T>, val: T) -> Option<usize> {
 }
 
 /// implementation of binary search for a vector of i8
-pub fn binary_search_input(v: & InputVec, val: usize) -> Option<usize> {
+pub fn binary_search_input(v: &InputSortedVec, val: i8) -> Option<usize> {
     binary_search(v, val)
 }
