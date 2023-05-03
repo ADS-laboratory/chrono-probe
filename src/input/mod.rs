@@ -123,14 +123,14 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
             repetitions > 0,
             "The number of repetitions must be greater than 0"
         );
-        let mut inputs = Vec::new();
+        let mut inputs = Vec::with_capacity(n);
         let length_distribution = self.distribution.generate(n);
         #[cfg(feature = "debug")]
         println!("Generating inputs...\n");
-        for (_j, input_size) in length_distribution.into_iter().enumerate() {
-            let mut inputs_with_same_size = Vec::new(); // TODO: do we need this vec? (maybe we could just push the inputs directly into the inputs vec without a Vec<Vec<_>>)
+        for (_j, input_size) in length_distribution.iter().enumerate() {
+            let mut inputs_with_same_size = Vec::with_capacity(repetitions); // TODO: do we need this vec? (maybe we could just push the inputs directly into the inputs vec without a Vec<Vec<_>>)
             for _ in 0..repetitions {
-                inputs_with_same_size.push(I::generate_input(input_size, self.builder.clone()));
+                inputs_with_same_size.push(I::generate_input(*input_size, self.builder.clone()));
             }
             inputs.push(inputs_with_same_size);
             #[cfg(feature = "debug")]
