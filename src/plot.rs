@@ -3,7 +3,8 @@ use crate::input::{Input, InputBuilder};
 use crate::measurements::{Measurements, Point};
 use plotters::prelude::*;
 
-/// Plots the data from the measurements using [plotters]
+/// Plots the data from the [`Measurements`] using [plotters].
+/// The plot is saved to the file specified by `file_name`, the file created will be an SVG file.
 ///
 /// # Arguments
 ///

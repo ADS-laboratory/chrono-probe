@@ -10,6 +10,8 @@ use std::{fmt::Display, ops::RangeInclusive};
 /// Without implementing lower level mechanisms this trait defines the shared behaviour of a
 /// distribution, i.e. the property of being able to generate the input sizes.
 pub trait Distribution: Display {
+    /// Generates a vector of input sizes. The number of input sizes to generate is given as
+    /// argument.
     fn generate(&self, n: usize) -> Vec<usize>;
 }
 
@@ -130,8 +132,7 @@ impl Distribution for UniformRandom {
 
 /// The struct representing an exponential distribution.
 ///
-/// Given a range and a &lambda;, it generates a vector of input sizes using an exponential
-/// distribution.
+/// Given a range, it generates a vector of input sizes using an exponential distribution.
 pub struct Exponential {
     range: RangeInclusive<usize>,
     lambda: f64,
@@ -208,9 +209,9 @@ impl Distribution for Exponential {
 
 /// The struct representing an exponential random distribution.
 ///
-/// Given a range and a &lambda;, it generates a vector of random input sizes using an
-/// exponential distribution. This means that the probability of appearing  in the
-/// output of a specific input size n will decrease as n increases.
+/// Given a range, it generates a vector of random input sizes using an exponential
+/// distribution. This means that the probability of appearing  in the output of
+/// a specific input size n will decrease as n increases.
 pub struct ExponentialRandom {
     range: RangeInclusive<usize>,
     lambda: f64,

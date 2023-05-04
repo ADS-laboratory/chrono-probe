@@ -3,22 +3,33 @@ use serde::Serialize;
 use std::fs::File;
 use std::time::{Duration, Instant};
 
+/// A point containing the size of the input and the time it took to process it
 #[derive(Serialize, Clone)]
 pub struct Point {
+    /// The size of the input
     pub size: usize,
+    /// The time it took to process the input
     pub time: Duration,
 }
 
+/// A measurement of an algorithm.
+/// Contains all the times it took the algorithm to process a set of inputs
 #[derive(Serialize, Clone)]
 pub struct Measurement {
+    /// The name of the algorithm
     pub algorithm_name: String,
+    /// Vector of points in the measurement
     pub measurement: Vec<Point>,
 }
 
+/// A set of measurements for some algorithms.
 #[derive(Serialize, Clone)]
 pub struct Measurements {
+    /// Vector of measurements
     pub measurements: Vec<Measurement>,
+    /// The relative error of the measurements
     pub relative_error: f32,
+    /// The resolution of the clock
     pub resolution: Duration,
 }
 
@@ -78,6 +89,14 @@ where
     end / n
 }
 
+/// Estimates the time it takes to run a function given a single mutable input
+///
+/// # Arguments
+///
+/// * `f` - The function to measure
+/// * `string` - The string to pass to the function
+/// * `relative_error` - The required relative error of the measurement
+/// * `resolution` - The resolution of the clock
 fn get_time_mut<I, O, Alg>(
     f: Alg,
     input: &mut I,
@@ -148,6 +167,15 @@ where
     }
 }
 
+/// Estimates the time it takes to run a function given a mutable vector of inputs of the same length.
+/// Return a Point with the length of the strings and the total time it took to run the function on all the strings.
+///
+/// # Arguments
+///
+/// * `f` - The function to measure
+/// * `strings` - The vector of strings to pass to the function
+/// * `relative_error` - The required relative error of the measurement
+/// * `resolution` - The resolution of the clock
 fn get_time_same_length_mut<I, O, Alg>(
     f: &Alg,
     inputs: &mut Vec<I>,
@@ -206,6 +234,14 @@ where
     }
 }
 
+/// Estimates the times it takes to run a function given a mutable vector of inputs
+///
+/// # Arguments
+///
+/// * `f` - The function to measure
+/// * `strings` - The vector of strings to pass to the function
+/// * `relative_error` - The required relative error of the measurement
+/// * `resolution` - The resolution of the clock
 fn get_times_mut<I, O, Alg>(
     f: &Alg,
     inputs: &mut InputSet<I>,
@@ -234,11 +270,11 @@ where
     }
 }
 
-/// Measures the time it takes to run different functions given a vector of inputs
+/// Measures the time it takes to run different functions given an [`InputSet`].
 ///
 /// # Arguments
 ///
-/// * `strings` - The vector of strings to pass to the functions
+/// * `strings` - The [`InputSet`] to pass to the functions
 /// * `algorithms` - The vector of functions to measure
 /// * `relative_error` - The required relative error of the measurements
 ///
@@ -272,6 +308,14 @@ where
     }
 }
 
+/// Measures the time it takes to run different functions given a mutable [`InputSet`].
+///
+/// # Arguments
+///
+/// * `strings` - The [`InputSet`] to pass to the functions
+/// * `algorithms` - The vector of functions to measure
+/// * `relative_error` - The required relative error of the measurements
+///
 pub fn measure_mut<I, O, Alg>(
     inputs: &mut InputSet<I>,
     algorithms: &[Alg],
@@ -340,6 +384,7 @@ impl Measurement {
             .size
     }
 
+    /// Get the linear regression of the [`Measurement`]
     pub fn linear_regression(&self) -> (f32, f32) {
         let mut sum_x = 0.0;
         let mut sum_y = 0.0;
@@ -360,7 +405,9 @@ impl Measurement {
         (slope, intercept)
     }
 
-    pub fn log_scale(&self) -> Self {
+    /// Returns a new [`Measurement`] where the size and time of every [`Point`] is
+    /// the logarithm in base 2 of the original ones.
+    pub fn log_log_scale(&self) -> Self {
         let mut new_measurement = Measurement {
             algorithm_name: self.algorithm_name.clone(),
             measurement: Vec::with_capacity(self.measurement.len()),
@@ -376,6 +423,7 @@ impl Measurement {
 }
 
 impl Measurements {
+    /// Get the maximum time it took to run the functions
     pub fn max_time(&self) -> Duration {
         self.measurements
             .iter()
@@ -384,6 +432,7 @@ impl Measurements {
             .max_time()
     }
 
+    /// Get the minimum time it took to run the functions
     pub fn min_time(&self) -> Duration {
         self.measurements
             .iter()
@@ -392,6 +441,7 @@ impl Measurements {
             .min_time()
     }
 
+    /// Get the maximum length of the strings passed to the functions
     pub fn max_length(&self) -> usize {
         self.measurements
             .iter()
@@ -400,6 +450,7 @@ impl Measurements {
             .max_length()
     }
 
+    /// Get the minimum length of the strings passed to the functions
     pub fn min_length(&self) -> usize {
         self.measurements
             .iter()
@@ -408,24 +459,30 @@ impl Measurements {
             .min_length()
     }
 
-    pub fn log_scale(&self) -> Self {
+    /// Returns a new [`Measurements`] where the size and time of every [`Point`] is
+    /// the logarithm in base 2 of the original ones.
+    pub fn log_log_scale(&self) -> Self {
         let mut new_measurements = Measurements {
             measurements: Vec::with_capacity(self.measurements.len()),
             relative_error: self.relative_error,
             resolution: self.resolution,
         };
         for measurement in &self.measurements {
-            new_measurements.measurements.push(measurement.log_scale());
+            new_measurements
+                .measurements
+                .push(measurement.log_log_scale());
         }
         new_measurements
     }
 
+    /// Serialize the [`Measurements`] to a JSON file
     pub fn serialize_json(&self, filename: &str) {
         let mut file = File::create(filename).unwrap();
         serde_json::to_writer(&mut file, &self).unwrap();
     }
 }
 
+/// Get the algorithm name from the path
 fn get_algorithm_name<Alg, I, O>(_: Alg) -> String
 where
     Alg: Fn(&I) -> O,
@@ -436,6 +493,8 @@ where
     name.into()
 }
 
+/// Get the algorithm name from the path
+/// This is the mutable version
 fn get_algorithm_name_mut<Alg, I, O>(_: Alg) -> String
 where
     Alg: Fn(&mut I) -> O,

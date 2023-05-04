@@ -66,9 +66,12 @@ pub mod distribution;
 
 /// Trait that must be implemented by algorithms' input types.
 pub trait Input {
-    type Builder: Clone;
+    /// The type of the builder. A builder can be used to select the type of generation for the inputs.
+    type Builder;
+    /// Returns the size of the input.
     fn get_size(&self) -> usize;
-    fn generate_input(size: usize, builder: Self::Builder) -> Self;
+    /// Generates an input of the given size, using the given builder.
+    fn generate_input(size: usize, builder: &Self::Builder) -> Self;
 }
 
 /// Struct that holds the inputs.
@@ -77,7 +80,7 @@ pub struct InputSet<I: Input> {
     pub(crate) inputs: Vec<Vec<I>>,
 }
 
-/// Struct that let you build the [`InputSet`].
+/// Struct used for building an [`InputSet`].
 #[derive(Serialize)]
 pub struct InputBuilder<I: Input, D: Distribution> {
     pub(crate) distribution: D,
@@ -130,7 +133,7 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
         for (_j, input_size) in length_distribution.iter().enumerate() {
             let mut inputs_with_same_size = Vec::with_capacity(repetitions); // TODO: do we need this vec? (maybe we could just push the inputs directly into the inputs vec without a Vec<Vec<_>>)
             for _ in 0..repetitions {
-                inputs_with_same_size.push(I::generate_input(*input_size, self.builder.clone()));
+                inputs_with_same_size.push(I::generate_input(*input_size, &self.builder));
             }
             inputs.push(inputs_with_same_size);
             #[cfg(feature = "debug")]
@@ -145,6 +148,18 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
 }
 
 impl<I: Input + Serialize> InputSet<I> {
+    /// Serializes the input set in a json file.
+    /// The file will be created if it doesn't exist, otherwise it will be overwritten.
+    ///
+    /// # Arguments
+    ///
+    /// * `filename` - The name of the file to be created.
+    ///
+    /// # Panics
+    ///
+    /// * Panics if the file cannot be created.
+    /// * Panics if the input set cannot be serialized.
+    ///
     pub fn serialize_json(&self, filename: &str) {
         let mut file = File::create(filename).unwrap();
         serde_json::to_writer(&mut file, &self).unwrap();

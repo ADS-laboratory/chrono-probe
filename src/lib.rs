@@ -1,6 +1,7 @@
 #![warn(clippy::all)]
-#![warn(rustdoc::missing_crate_level_docs)]
 #![warn(clippy::cargo)]
+#![warn(missing_docs)]
 pub mod input;
 pub mod measurements;
 pub mod plot;
+// TODO: Check for all visibilities

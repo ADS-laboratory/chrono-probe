@@ -24,7 +24,7 @@ fn main() {
     let file_name = "plotters-doc-data/tick_control.svg";
 
     for result in results.clone().measurements {
-        let log_linear_regression = result.log_scale().linear_regression();
+        let log_linear_regression = result.log_log_scale().linear_regression();
         println!(
             "{}: {} * x + {}",
             result.algorithm_name, log_linear_regression.0, log_linear_regression.1
