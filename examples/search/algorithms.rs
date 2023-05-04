@@ -1,6 +1,11 @@
 use crate::input::SearchInput;
 use std::cmp::Ordering;
 
+/// Implementation of linear search algorithm for the input type defined in the input module
+pub fn linear_search_input(input: &SearchInput) -> Option<usize> {
+    linear_search(&input.vector, input.target)
+}
+
 /// Linear search algorithm
 ///
 /// # Arguments
@@ -19,9 +24,9 @@ pub fn linear_search<T: Ord>(v: &[T], val: T) -> Option<usize> {
     None
 }
 
-/// Implementation of linear search algorithm for a vector of i8
-pub fn linear_search_input(input: &SearchInput) -> Option<usize> {
-    linear_search(&input.vector, input.target)
+/// implementation of binary search for the input type defined in the input module
+pub fn binary_search_input(input: &SearchInput) -> Option<usize> {
+    binary_search(&input.vector, input.target)
 }
 
 /// Binary search algorithm
@@ -44,9 +49,4 @@ pub fn binary_search<T: Ord>(v: &[T], val: T) -> Option<usize> {
         }
     }
     None
-}
-
-/// implementation of binary search for a vector of i8
-pub fn binary_search_input(input: &SearchInput) -> Option<usize> {
-    binary_search(&input.vector, input.target)
 }

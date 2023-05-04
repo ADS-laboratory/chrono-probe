@@ -121,7 +121,7 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
         assert!(
             n > 0,
             "The number of inputs to be generated must be greater than 0"
-        ); // TODO: can this check be removed? (already done in the distribution)
+        );
         assert!(
             repetitions > 0,
             "The number of repetitions must be greater than 0"

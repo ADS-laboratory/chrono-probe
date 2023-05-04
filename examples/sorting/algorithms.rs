@@ -1,9 +1,11 @@
 use crate::input::InputVec;
 
+/// The marge sort algorithm with the input type defined in the input module.
 pub fn merge_sort_input(v: &mut InputVec) {
     merge_sort(v)
 }
 
+/// The marge sort algorithm.
 pub fn merge_sort<T: Ord + Clone>(v: &mut Vec<T>) {
     let n = v.len();
     if n > 1 {
@@ -42,10 +44,12 @@ fn merge<T: Ord + Clone>(v: &mut [T], left: &Vec<T>, right: &Vec<T>) {
     }
 }
 
+/// The quick sort algorithm with the input type defined in the input module.
 pub fn quick_sort_input(v: &mut InputVec) {
     quick_sort(v)
 }
 
+/// The quick sort algorithm.
 pub fn quick_sort<T: Ord + Clone>(v: &mut Vec<T>) {
     quick_sort_rec(v, 0, v.len() - 1);
 }

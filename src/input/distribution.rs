@@ -33,6 +33,7 @@ impl Uniform {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
+        assert!(!range.is_empty(), "The range must not be empty.");
         Uniform { range }
     }
 }
@@ -93,13 +94,14 @@ impl UniformRandom {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
+        assert!(!range.is_empty(), "The range must not be empty.");
         UniformRandom { range }
     }
 }
 
 impl Display for UniformRandom {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "UniformRandom")
+        write!(f, "Uniform Random")
     }
 }
 
@@ -146,10 +148,7 @@ impl Exponential {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
-        assert!(
-            range.end() > range.start(),
-            "The end of the range must be greater than the start"
-        );
+        assert!(!range.is_empty(), "The range must not be empty.");
         let lambda =
             ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         Exponential { range, lambda }
@@ -189,6 +188,7 @@ impl Distribution for Exponential {
     /// println!("{:?}", lengths);
     /// ```
     fn generate(&self, n: usize) -> Vec<usize> {
+        assert!(n > 0, "The number of input sizes must be greater than zero");
         // Preallocating the vector of input sizes
         let mut lengths = Vec::with_capacity(n);
 
@@ -225,10 +225,7 @@ impl ExponentialRandom {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
-        assert!(
-            *range.start() > 0,
-            "The start of the range must be grater then zero"
-        );
+        assert!(!range.is_empty(), "The range must not be empty.");
         let lambda =
             ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         ExponentialRandom { range, lambda }
@@ -247,7 +244,7 @@ impl ExponentialRandom {
 
 impl Display for ExponentialRandom {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ExponentialRandom λ={}", self.lambda)
+        write!(f, "Exponential Random λ={}", self.lambda)
     }
 }
 
@@ -286,6 +283,7 @@ impl Distribution for ExponentialRandom {
 }
 
 /// Helper function to generate an exponential distribution.
+// u ∈ [0, 1], lambda > 0, min > 0, max > 0, min < max
 fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
     /*
     In order to generate an exponential distribution the inverse transform sampling method is used.
@@ -297,8 +295,6 @@ fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
 
     Desired value = F^-1(e)
      */
-
-    assert!((0.0..=1.0).contains(&u), "u must be in [0, 1]");
 
     let x = lambda * min;
     let y = lambda * max;

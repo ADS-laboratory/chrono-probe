@@ -5,3 +5,4 @@ pub mod input;
 pub mod measurements;
 pub mod plot;
 // TODO: Check for all visibilities
+// TODO: Check for invalid functions arguments
