@@ -31,5 +31,5 @@ fn main() {
         )
     }
 
-    time_plot(file_name, results, vector_builder);
+    time_plot(file_name, results, &vector_builder);
 }

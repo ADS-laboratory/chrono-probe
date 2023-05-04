@@ -14,7 +14,7 @@ use plotters::prelude::*;
 pub fn time_plot<I: Input, D: Distribution>(
     file_name: &str,
     measurements_struct: Measurements,
-    builder: InputBuilder<I, D>,
+    builder: &InputBuilder<I, D>,
 ) {
     let x_min = measurements_struct.min_length() as u32;
     let x_max = measurements_struct.max_length() as u32;
@@ -34,10 +34,7 @@ pub fn time_plot<I: Input, D: Distribution>(
 
     lower
         .titled(
-            &format!(
-                "Fractional period time complexity test using {} method for string generation",
-                distribution_name
-            ),
+            &format!("Fractional period time complexity test using {distribution_name} method for string generation"),
             ("sans-serif", 10).into_font().color(&BLACK.mix(0.5)),
         )
         .unwrap();
@@ -86,5 +83,5 @@ pub fn time_plot<I: Input, D: Distribution>(
 
     // To avoid the IO failure being ignored silently, we manually call the present function
     root.present().expect("Unable to write result to file, please make sure 'plotters-doc-data' dir exists under current dir");
-    println!("Result has been saved to {}", file_name);
+    println!("Result has been saved to {file_name}");
 }

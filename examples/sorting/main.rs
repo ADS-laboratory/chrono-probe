@@ -27,12 +27,5 @@ fn main() {
     let result_clone = results.clone();
     result_clone.serialize_json("results.json");
 
-    /*
-    for result in result_clone.measurements {
-        let log_linear_regression = result.log_scale().linear_regression();
-        println!("{}: {} * x + {}", result.algorithm_name , log_linear_regression.0, log_linear_regression.1)
-    }
-     */
-
-    time_plot(file_name, results, vector_builder);
+    time_plot(file_name, results, &vector_builder);
 }

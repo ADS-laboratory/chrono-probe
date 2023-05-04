@@ -6,7 +6,7 @@ description = "Compare time complexity of algorithms"
 license = "MIT"
 repository = "https://github.com/ADS-laboratory/time-complexity-plot.git"
 readme = "README.md"
-authors = ["Danelutti Leonardo", "Della Giustina Lorenzo"]
+authors = ["Danelutti Leonardo", "Della Giustina Lorenzo", "Bortuzzo Francesco"]
 keywords = ["time-complexity", "plot", "algorithm"]
 categories = ["algorithms", "plot"]
 

@@ -145,6 +145,10 @@ impl Exponential {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
+        assert!(
+            range.end() > range.start(),
+            "The end of the range must be greater than the start"
+        );
         let lambda =
             ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         Exponential { range, lambda }
@@ -195,7 +199,7 @@ impl Distribution for Exponential {
                 *self.range.start() as f64,
                 *self.range.end() as f64,
             );
-            println!("{}", exp_x);
+            println!("{exp_x}");
             lengths.push(exp_x as usize);
         }
         lengths
@@ -220,6 +224,10 @@ impl ExponentialRandom {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
+        assert!(
+            *range.start() > 0,
+            "The start of the range must be grater then zero"
+        );
         let lambda =
             ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         ExponentialRandom { range, lambda }
@@ -295,7 +303,7 @@ fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
     let y = lambda * max;
     let z: f64;
 
-    if u == 1.0 {
+    if u == 1.0_f64 {
         return max;
     } else if u == 0.0 {
         return min;

@@ -346,7 +346,7 @@ impl Measurement {
         let mut sum_xy = 0.0;
         let mut sum_xx = 0.0;
         let mut n = 0.0;
-        for point in self.measurement.iter() {
+        for point in &self.measurement {
             let x = point.size as f32;
             let y = point.time.as_micros() as f32;
             sum_x += x;
@@ -365,7 +365,7 @@ impl Measurement {
             algorithm_name: self.algorithm_name.clone(),
             measurement: Vec::with_capacity(self.measurement.len()),
         };
-        for point in self.measurement.iter() {
+        for point in &self.measurement {
             new_measurement.measurement.push(Point {
                 size: (point.size as f32).log2() as usize,
                 time: Duration::from_micros((point.time.as_micros() as f32).log2() as u64),
@@ -414,7 +414,7 @@ impl Measurements {
             relative_error: self.relative_error,
             resolution: self.resolution,
         };
-        for measurement in self.measurements.iter() {
+        for measurement in &self.measurements {
             new_measurements.measurements.push(measurement.log_scale());
         }
         new_measurements

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::fs::File;
 
-use self::distribution::*;
+use self::distribution::Distribution;
 
 /// Distribution module implements an easy way to abstract the generation of input sizes.
 ///
@@ -31,24 +31,24 @@ use self::distribution::*;
 /// use time_complexity_plot::input::distribution::*;
 ///
 /// // The struct representing your custom distribution
-/// struct Costant {
+/// struct Constant {
 ///     k: usize,
 /// }
 ///
 /// // Implement a way of creating your custom distribution
-/// impl Costant {
+/// impl Constant {
 ///     pub fn new(k: usize) -> Self { Self { k } }
 /// }
 ///
 /// // Implement Display in order to print the name of your distribution in the plots
-/// impl Display for Costant {
+/// impl Display for Constant {
 ///     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 ///        write!(f, "Costant")
 ///     }
 /// }
 ///
 /// // Implement the trait Distribution i.e. the way of generating the input sizes
-/// impl Distribution for Costant {
+/// impl Distribution for Constant {
 ///     fn generate(&self, n: usize) -> Vec<usize> {
 ///         let mut lengths = Vec::with_capacity(n);
 ///         for _ in 0..n {
@@ -58,8 +58,8 @@ use self::distribution::*;
 ///     }
 /// }
 ///
-/// let costant = Costant::new(5);
-/// let lengths = costant.generate(10);
+/// let constant = Constant::new(5);
+/// let lengths = constant.generate(10);
 /// println!("{:?}", lengths);
 /// ```
 pub mod distribution;
@@ -77,7 +77,7 @@ pub struct InputSet<I: Input> {
     pub(crate) inputs: Vec<Vec<I>>,
 }
 
-/// Struct that let you build the [InputSet].
+/// Struct that let you build the [`InputSet`].
 #[derive(Serialize)]
 pub struct InputBuilder<I: Input, D: Distribution> {
     pub(crate) distribution: D,
@@ -85,7 +85,7 @@ pub struct InputBuilder<I: Input, D: Distribution> {
 }
 
 impl<I: Input, D: Distribution> InputBuilder<I, D> {
-    /// Creates a new [InputBuilder].
+    /// Creates a new [`InputBuilder`].
     ///
     /// # Arguments
     ///
@@ -163,7 +163,7 @@ impl<I: Input + Serialize> InputSet<I> {
 /// * `$generate_input_closure` - The closure that will be used to generate the input through the builder.
 ///     (`|usize, $builder| -> $built_in_type`)
 /// * `$builder` - The type of the builder that will be used to generate the input.
-/// * `$input` - The type to implement [Input](crate::input::Input) for.
+/// * `$input` - The type to implement [Input](Input) for.
 /// * `$get_size_closure` - The closure that will be used to get the size of the input.
 ///     (`|$built_in_type| -> usize`)
 ///
@@ -196,6 +196,7 @@ macro_rules! impl_input {
             /// # Example
             ///
             /// ```
+            /// use time_complexity_plot::impl_input;
             /// use time_complexity_plot::input::Input;
             ///
             /// struct VecBuilder<'a> {
