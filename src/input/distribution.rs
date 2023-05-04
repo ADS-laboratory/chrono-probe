@@ -200,7 +200,6 @@ impl Distribution for Exponential {
                 *self.range.start() as f64,
                 *self.range.end() as f64,
             );
-            println!("{exp_x}");
             lengths.push(exp_x as usize);
         }
         lengths
@@ -311,7 +310,7 @@ fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
     desired value.
      */
     if y - x < f64::MAX_EXP as f64 * 2.0_f64.ln() {
-        z = -y * ((1.0 - u) * (y - x).exp() + u).ln();
+        z = y - ((1.0 - u) * (y - x).exp() + u).ln();
         return z / lambda;
     }
 
