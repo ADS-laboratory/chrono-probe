@@ -4,9 +4,9 @@ use rand::Rng;
 use time_complexity_plot::input::Input;
 
 #[derive(Clone)]
-pub struct InputVec(Vec<i8>);
+pub struct InputVec(Vec<u32>);
 impl Deref for InputVec {
-    type Target = Vec<i8>;
+    type Target = Vec<u32>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -31,7 +31,7 @@ impl Input for Vector {
         let mut rng = thread_rng();
         let mut v = Vec::with_capacity(size);
         for _ in 0..size {
-            let rand: i8 = rng.gen();
+            let rand: u32 = rng.gen();
             v.push(rand);
         }
         InputVec(v)

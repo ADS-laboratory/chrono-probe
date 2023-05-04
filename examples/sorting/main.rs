@@ -12,7 +12,7 @@ use time_complexity_plot::{
 };
 
 fn main() {
-    let length_distribution = Exponential::new(1000..=500_000, 1.0);
+    let length_distribution = Exponential::new(1000..=500_000);
 
     let vector_builder = InputBuilder::new(length_distribution, ());
 
@@ -20,7 +20,7 @@ fn main() {
 
     let algorithms = &[merge_sort_input, quick_sort_input];
 
-    let results = measure_mut(&mut vectors, algorithms, 0.00001);
+    let results = measure_mut(&mut vectors, algorithms, 0.001);
 
     let file_name = "plotters-doc-data/tick_control.svg";
 

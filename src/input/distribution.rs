@@ -145,7 +145,8 @@ impl Exponential {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
-        let lambda = ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
+        let lambda =
+            ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         Exponential { range, lambda }
     }
 
@@ -178,7 +179,7 @@ impl Distribution for Exponential {
     /// ```
     /// use time_complexity_plot::input::distribution::*;
     ///
-    /// let exponential = Exponential::new(1..=100, 0.5);
+    /// let exponential = Exponential::new(1..=100);
     /// let lengths = exponential.generate(10);
     /// println!("{:?}", lengths);
     /// ```
@@ -219,7 +220,8 @@ impl ExponentialRandom {
     ///
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
-        let lambda = ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
+        let lambda =
+            ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         ExponentialRandom { range, lambda }
     }
 
@@ -252,7 +254,7 @@ impl Distribution for ExponentialRandom {
     /// ```
     /// use time_complexity_plot::input::distribution::*;
     ///
-    /// let exponential_random = ExponentialRandom::new(1..=100, 0.5);
+    /// let exponential_random = ExponentialRandom::new(1..=100);
     /// let lengths = exponential_random.generate(10);
     /// println!("{:?}", lengths);
     /// ```
@@ -276,7 +278,6 @@ impl Distribution for ExponentialRandom {
 
 /// Helper function to generate an exponential distribution.
 fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
-
     /*
     In order to generate an exponential distribution the inverse transform sampling method is used.
     Given an uniform distributed value u ∈ [0, 1] a linear transformation is applied in order to
@@ -288,7 +289,7 @@ fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
     Desired value = F^-1(e)
      */
 
-    assert!(u >= 0.0 && u <= 1.0, "u must be in [0, 1]");
+    assert!((0.0..=1.0).contains(&u), "u must be in [0, 1]");
 
     let x = lambda * min;
     let y = lambda * max;

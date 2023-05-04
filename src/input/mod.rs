@@ -4,49 +4,49 @@ use std::fs::File;
 use self::distribution::*;
 
 /// Distribution module implements an easy way to abstract the generation of input sizes.
-/// 
+///
 /// Provides:
 /// 1) A trait that can be used to define your own distribution.
 /// 2) A set of predefined distributions.
-/// 
+///
 /// # Example
-/// 
+///
 /// To test this module you can easily copy and paste the following code snippets.
-/// 
+///
 /// ## Predefined distributions
-/// 
+///
 /// ```
 /// use time_complexity_plot::input::distribution::*;
-/// 
+///
 /// let uniform = Uniform::new(1..=100);
 /// let lengths = uniform.generate(10);
 /// println!("{:?}", lengths);
 /// ```
-/// 
+///
 /// ## Custom distribution
-/// 
+///
 /// ```
 /// use std::fmt::Display;
-/// 
+///
 /// use time_complexity_plot::input::distribution::*;
-/// 
+///
 /// // The struct representing your custom distribution
 /// struct Costant {
 ///     k: usize,
 /// }
-/// 
+///
 /// // Implement a way of creating your custom distribution
 /// impl Costant {
 ///     pub fn new(k: usize) -> Self { Self { k } }
 /// }
-/// 
+///
 /// // Implement Display in order to print the name of your distribution in the plots
 /// impl Display for Costant {
 ///     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 ///        write!(f, "Costant")
 ///     }
 /// }
-/// 
+///
 /// // Implement the trait Distribution i.e. the way of generating the input sizes
 /// impl Distribution for Costant {
 ///     fn generate(&self, n: usize) -> Vec<usize> {
@@ -57,7 +57,7 @@ use self::distribution::*;
 ///         lengths
 ///     }
 /// }
-/// 
+///
 /// let costant = Costant::new(5);
 /// let lengths = costant.generate(10);
 /// println!("{:?}", lengths);
