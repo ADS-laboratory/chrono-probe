@@ -139,14 +139,24 @@ pub struct Exponential {
 
 impl Exponential {
     /// Creates a new exponential distribution.
+    /// The mean of the distribution is set to match the mean of the inverse uniform distribution.
     ///
     /// # Arguments
     ///
     /// * `range` - The range of the distribution.
-    /// * `lambda` - The &lambda; parameter of the distribution (expected value will be 1/&lambda;).
-    pub fn new(range: RangeInclusive<usize>, lambda: f64) -> Self {
-        assert!(lambda > 0.0, "Lambda must be grater then zero");
+    pub fn new(range: RangeInclusive<usize>) -> Self {
+        let lambda = ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         Exponential { range, lambda }
+    }
+
+    /// Sets the &lambda; of the exponential distribution.
+    ///
+    /// # Arguments
+    ///
+    /// * `lambda` - The new &lambda; of the exponential distribution.
+    pub fn set_lambda(&mut self, lambda: f64) {
+        assert!(lambda > 0.0, "Lambda must be grater then zero");
+        self.lambda = lambda;
     }
 }
 
@@ -203,14 +213,24 @@ pub struct ExponentialRandom {
 
 impl ExponentialRandom {
     /// Creates a new exponential random distribution.
+    /// The mean of the distribution is set to match the mean of the inverse uniform distribution.
     ///
     /// # Arguments
     ///
     /// * `range` - The range of the distribution.
-    /// * `lambda` - The &lambda; parameter of the distribution (expected value will be 1/&lambda;).
-    pub fn new(range: RangeInclusive<usize>, lambda: f64) -> Self {
-        assert!(lambda > 0.0, "Lambda must be grater then zero");
+    pub fn new(range: RangeInclusive<usize>) -> Self {
+        let lambda = ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         ExponentialRandom { range, lambda }
+    }
+
+    /// Sets the &lambda; of the exponential random distribution.
+    ///
+    /// # Arguments
+    ///
+    /// * `lambda` - The new &lambda; of the exponential random distribution.
+    pub fn set_lambda(&mut self, lambda: f64) {
+        assert!(lambda > 0.0, "Lambda must be grater then zero");
+        self.lambda = lambda;
     }
 }
 
@@ -276,6 +296,8 @@ fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
 
     if u == 1.0 {
         return max;
+    } else if u == 0.0 {
+        return min;
     }
 
     /*
