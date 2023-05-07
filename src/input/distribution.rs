@@ -1,3 +1,84 @@
+//! This module implements an easy way to abstract the generation of input sizes.
+//!
+//! Provides:
+//! 1) A trait that can be used to define your own distribution.
+//! 2) A set of predefined distributions.
+//!
+//! # Examples
+//!
+//! To test this module you can easily copy and paste the following code snippets.
+//!
+//! ## Predefined distributions
+//!
+//! This example demonstrates how to use a predefined distribution to generate a vector of input
+//! sizes. In this specific case, we use the [`Uniform`] distribution as an example.
+//!
+//! ```
+//! use time_complexity_plot::input::distribution::*;
+//!
+//! // First, we create an instance of the Uniform distribution
+//! let uniform = Uniform::new(1..=100);
+//!
+//! // Then we generate a vector of 10 input sizes using the distribution
+//! let lengths = uniform.generate(10);
+//!
+//! // Finally, we print the vector of input sizes
+//! println!("{:?}", lengths);
+//! ```
+//!
+//! ## Custom distribution
+//!
+//! In this example we will cover the steps needed to create a custom distribution.
+//! The goal is to generate a vector of input sizes that are all equal to a given constant.
+//! To achieve this goal, we will follow these steps:
+//! * Create a struct representing the custom distribution
+//! * Implement a way of creating an instance of the distribution
+//! * Implement the [`Display`] trait to allow printing the name of your distribution in the plots
+//! * Implement the [`Distribution`] trait, which specifies how to generate the input sizes
+//!
+//! ```
+//! use std::fmt::Display;
+//!
+//! use time_complexity_plot::input::distribution::*;
+//!
+//! // First, we create the struct representing the custom distribution
+//! struct Constant {
+//!     k: usize,
+//! }
+//!
+//! // Then we implement a way of creating an instance of the distribution
+//! impl Constant {
+//!     pub fn new(k: usize) -> Self { Self { k } }
+//! }
+//!
+//! // By implementing the Display trait, we can print the name of our distribution in the plots
+//! impl Display for Constant {
+//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//!        write!(f, "Costant")
+//!     }
+//! }
+//!
+//! // Lastly, we implement the Distribution trait, which specifies how to generate the input sizes
+//! impl Distribution for Constant {
+//!     fn generate(&self, n: usize) -> Vec<usize> {
+//!         let mut lengths = Vec::with_capacity(n);
+//!         for _ in 0..n {
+//!             lengths.push(self.k);
+//!         }
+//!         lengths
+//!     }
+//! }
+//!
+//! let constant = Constant::new(5);
+//! let lengths = constant.generate(10);
+//! println!("{:?}", lengths);
+//! ```
+//!
+//! Note that this example is deliberately simple. In practice, you may want to generate
+//! input sizes that are more diverse than a constant value. Nevertheless, this example
+//! provides a basic understanding of how to create a custom distribution and can be used
+//! as a starting point for implementing more complex distributions tailored to your needs.
+
 use rand::{thread_rng, Rng};
 use std::{fmt::Display, ops::RangeInclusive};
 

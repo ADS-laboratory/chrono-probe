@@ -1,67 +1,115 @@
+//! This module provides tools for generating input data helpful for testing algorithms.
+//!
+//! The [`Input`] trait is the core of this module and must be implemented by the input types
+//! used by algorithms. This trait defines two methods:
+//!
+//! * `get_size(&self) -> usize`: returns the size of the input.
+//! * `generate_input(size: usize) -> Self`: generates a random input of the given size.
+//!
+//! This module also provides the [`InputBuilder`] struct, which is used to build your input
+//! and store it into an [`InputSet`] instance. You can use the InputBuilder as soon as you
+//! have:
+//!
+//! * Figured out which distribution suits your needs (read the [distribution] documention
+//! for more infos).
+//! * Created your input type (read the example below).
+//!
+//! # Example
+//!
+//! ## Basic usage
+//!
+//! Let's say we are testing the performance of our new algorithm to check if a given
+//! number is prime. We'll start by defining a new type to represent our input type:
+//!
+//! ```
+//! pub struct PrimeTestInput {
+//!     pub number: u32,
+//! }
+//! ```
+//!
+//! Next, we need to implement the [`Input`] trait for our new type:
+//!
+//! ```
+//! impl Input for PrimeTestInput {
+//!     type Builder = ();
+//!
+//!     // Return the size of the input.
+//!     fn get_size(&self) -> usize {
+//!         // We use the number of bits as size.
+//!         self.number.to_be_bytes().len() * 8
+//!     }
+//!
+//!     // Generate a random input of the given size.
+//!     fn generate_input(size: usize, builder: &Self::Builder) -> Self {
+//!         let mut rng = rand::thread_rng();
+//!         PrimeTestInput {
+//!             // We consider the size as the number of bits.
+//!             number: rng.gen_range(2u32.pow(size-1 as u32)..2u32.pow(size as u32)),
+//!         }
+//!     }
+//! }
+//! ```
+//!
+//! Now we can use our [`PrimeTestInput`] type to generate inputs for testing our algorithm!
+//!
+//! Note that the input size is taken as an argument by the [`generate_input`] method. If
+//! you want to know more about the input sizes generation, you can read the documentation
+//! of the [`distribution`] submodule.
+//!
+//! ## Multiple input generators
+//!
+//! Now, you may be curious about the [`Builder`](Input::Builder) type.
+//!
+//! The [`Builder`](Input::Builder) type is helpful when you want to choose between different
+//! input generators. In the previus example, we only have needed one generator, so we used ()
+//! as the [`Builder`](Input::Builder) type. However, if we had more than one generator, we
+//! could define an enum like this:
+//!
+//! ```
+//! pub enum Generator {
+//!     Fast,
+//!     Uniform,
+//! }
+//! ```
+//!
+//! Then, we could use `Generator` as the [`Builder`](Input::Builder) type:
+//!
+//! ```
+//! impl Input for PrimeTestInput {
+//!     type Builder = Generator;
+//!
+//!     // Return the size of the input.
+//!     fn get_size(&self) -> usize {
+//!         1
+//!     }
+//!
+//!     // Generate a random input of the given size.
+//!     fn generate_input(size: usize, builder: &Self::Builder) -> Self {
+//!         match builder {
+//!             Generator::Fast => generate_order_vector_fast(size, u32::MIN, u32::MAX),
+//!             Generator::Uniform => generate_order_vector(size, u32::MIN, u32::MAX),
+//!         }
+//!     }
+//! }
+//! ```
+//!
+//! If you're new to Rust, you may be wondering why we need to create a new type for the input
+//! when we could just use the `u32` type itself. The reason is that only traits you own can be
+//! implemented for primitive types, and this library owns the [`Input`] trait, not your crate
+//! where you're using this library.
+//!
+//! ## Using primitive types as input
+//!
+//! If you need to use a primitive type as input but can't wrap it in a new type, you can use
+//! the [impl_input] macro.
+//!
+//! TODO:...
+
 use serde::Serialize;
 use std::fs::File;
 
 use self::distribution::Distribution;
 
-/// Distribution module implements an easy way to abstract the generation of input sizes.
-///
-/// Provides:
-/// 1) A trait that can be used to define your own distribution.
-/// 2) A set of predefined distributions.
-///
-/// # Example
-///
-/// To test this module you can easily copy and paste the following code snippets.
-///
-/// ## Predefined distributions
-///
-/// ```
-/// use time_complexity_plot::input::distribution::*;
-///
-/// let uniform = Uniform::new(1..=100);
-/// let lengths = uniform.generate(10);
-/// println!("{:?}", lengths);
-/// ```
-///
-/// ## Custom distribution
-///
-/// ```
-/// use std::fmt::Display;
-///
-/// use time_complexity_plot::input::distribution::*;
-///
-/// // The struct representing your custom distribution
-/// struct Constant {
-///     k: usize,
-/// }
-///
-/// // Implement a way of creating your custom distribution
-/// impl Constant {
-///     pub fn new(k: usize) -> Self { Self { k } }
-/// }
-///
-/// // Implement Display in order to print the name of your distribution in the plots
-/// impl Display for Constant {
-///     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-///        write!(f, "Costant")
-///     }
-/// }
-///
-/// // Implement the trait Distribution i.e. the way of generating the input sizes
-/// impl Distribution for Constant {
-///     fn generate(&self, n: usize) -> Vec<usize> {
-///         let mut lengths = Vec::with_capacity(n);
-///         for _ in 0..n {
-///             lengths.push(self.k);
-///         }
-///         lengths
-///     }
-/// }
-///
-/// let constant = Constant::new(5);
-/// let lengths = constant.generate(10);
-/// println!("{:?}", lengths);
-/// ```
 pub mod distribution;
 
 /// Trait that must be implemented by algorithms' input types.
@@ -227,4 +275,9 @@ macro_rules! impl_input {
             }
         }
     };
+}
+
+fn f() {
+    let a = 0u32;
+    let b = a.to_be_bytes().len();
 }
