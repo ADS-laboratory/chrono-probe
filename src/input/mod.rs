@@ -80,7 +80,8 @@
 //!
 //!     // Return the size of the input.
 //!     fn get_size(&self) -> usize {
-//!         1
+//!         // We use the number of bits as size.
+//!         self.number.to_be_bytes().len() * 8
 //!     }
 //!
 //!     // Generate a random input of the given size.
@@ -99,11 +100,32 @@
 //! where you're using this library.
 //!
 //! ## Using primitive types as input
+//! 
+//! TODO: not working yet
 //!
 //! If you need to use a primitive type as input but can't wrap it in a new type, you can use
 //! the [impl_input] macro.
+//! 
+//! The previous example could be rewritten like this:
 //!
-//! TODO:...
+//! ``` 
+//! impl_input!(
+//!     (|size: usize, builder: &Generator| -> u32
+//!         {
+//!             match builder {
+//!                 Generator::Fast => generate_order_vector_fast(size, u32::MIN, u32::MAX),
+//!                 Generator::Uniform => generate_order_vector(size, u32::MIN, u32::MAX),
+//!             }
+//!         })(Generator) -> u32,
+//!     |input: u32| -> usize
+//!         {
+//!             input.to_be_bytes().len() * 8
+//!         }
+//! );
+//! ```
+//! 
+//! The first argument is the type of the input, and the second argument is a closure that
+//! takes the size of the input as argument and returns the input itself.
 
 use serde::Serialize;
 use std::fs::File;
@@ -131,7 +153,9 @@ pub struct InputSet<I: Input> {
 /// Struct used for building an [`InputSet`].
 #[derive(Serialize)]
 pub struct InputBuilder<I: Input, D: Distribution> {
+    // The distribution that will be used to generate the input lengths.
     pub(crate) distribution: D,
+    // The builder that will be used to generate the inputs.
     pub(crate) builder: I::Builder,
 }
 
@@ -140,7 +164,7 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
     ///
     /// # Arguments
     ///
-    /// * `distribution` - The builder of the distribuition that will be used to generate the inputs.
+    /// * `distribution` - The distribuition that will be used to generate the input lengths.
     /// * `builder` - The builder that will be used to generate the inputs.
     pub fn new(distribution: D, builder: I::Builder) -> InputBuilder<I, D> {
         InputBuilder {
@@ -166,6 +190,8 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
     /// * `n` - The number of inputs to be generated (exluding repetitions: the actual amount of inputs generated is n*repetitions).
     /// * `repetitions` - The number of repetitions for each input size.
     pub fn build_with_repetitions(&self, n: usize, repetitions: usize) -> InputSet<I> {
+        // TODO: remove theese assertions: usually asserts are not used in libraries
+        // A better way to handle this would be to return a Result instead of panicking
         assert!(
             n > 0,
             "The number of inputs to be generated must be greater than 0"
@@ -174,16 +200,34 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
             repetitions > 0,
             "The number of repetitions must be greater than 0"
         );
+
+        // Initialize the inputs vec with the correct capacity
         let mut inputs = Vec::with_capacity(n);
+
+        // Generate the input lengths using the given distribution
         let length_distribution = self.distribution.generate(n);
+
+        // Printing in the console for debug purposes
         #[cfg(feature = "debug")]
         println!("Generating inputs...\n");
+
+        // Iterate over the input lengths
         for (_j, input_size) in length_distribution.iter().enumerate() {
-            let mut inputs_with_same_size = Vec::with_capacity(repetitions); // TODO: do we need this vec? (maybe we could just push the inputs directly into the inputs vec without a Vec<Vec<_>>)
+
+            // Initialize the vec holding the inputs with the same size
+            let mut inputs_with_same_size = Vec::with_capacity(repetitions);
+
+            // Iterate over the repetitions
             for _ in 0..repetitions {
+
+                // Generate the inputs of the given size and push them to the vec
                 inputs_with_same_size.push(I::generate_input(*input_size, &self.builder));
             }
+
+            // Push the vec holding the inputs with the same size to the inputs vec
             inputs.push(inputs_with_same_size);
+
+            // Printing in the console the progress for debug purposes
             #[cfg(feature = "debug")]
             {
                 if _j % (n / 20) == 0 {
@@ -191,6 +235,8 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
                 }
             }
         }
+
+        // Return the input set
         InputSet { inputs }
     }
 }
@@ -211,6 +257,7 @@ impl<I: Input + Serialize> InputSet<I> {
     pub fn serialize_json(&self, filename: &str) {
         let mut file = File::create(filename).unwrap();
         serde_json::to_writer(&mut file, &self).unwrap();
+        // TODO: handle errors instead of panicking maybe returning a Result
     }
 }
 
@@ -224,9 +271,9 @@ impl<I: Input + Serialize> InputSet<I> {
 /// # Arguments
 ///
 /// * `$generate_input_closure` - The closure that will be used to generate the input through the builder.
-///     (`|usize, $builder| -> $built_in_type`)
+///     (`|usize, &$builder| -> $input`)
 /// * `$builder` - The type of the builder that will be used to generate the input.
-/// * `$input` - The type to implement [Input](Input) for.
+/// * `$input` - The type to implement [`Input`](Input) for.
 /// * `$get_size_closure` - The closure that will be used to get the size of the input.
 ///     (`|$built_in_type| -> usize`)
 ///
@@ -234,15 +281,19 @@ impl<I: Input + Serialize> InputSet<I> {
 ///
 /// ```
 /// use time_complexity_plot::impl_input;
-/// // TODO: example
-/// // impl_input!(()() -> Vec<i32>, |v: Vec<i32>| v.len());
+/// use time_complexity_plot::input::Input;
+///
+///
+/// impl_input!( (|size: usize, builder: ()| -> u32 { 1 })(()) -> u32, |input: u32| -> usize { 1 } );
+/// 
+/// let input = u32::generate_input(10, ());
 /// ```
-#[macro_export]
+#[macro_export] // TODO: this macro seems to be shown in the docs in the wrong path
 macro_rules! impl_input {
     (($generate_input_closure:expr)($builder:ty) -> $input:ty, $get_size_closure:expr) => {
         /// Implementation of "Input" for $built_in_type
         impl $crate::input::Input for $input {
-            type Builder<'a> = $builder;
+            type Builder = $builder;
 
             /// Gets the size of the input.
             fn get_size(&self) -> usize {
@@ -255,29 +306,9 @@ macro_rules! impl_input {
             ///
             /// * `size` - The size of the input to be generated.
             /// * `builder` - The builder that will be used to generate the input (it's basically a function).
-            ///
-            /// # Example
-            ///
-            /// ```
-            /// use time_complexity_plot::impl_input;
-            /// use time_complexity_plot::input::Input;
-            ///
-            /// struct VecBuilder<'a> {
-            ///     func: &'a fn(usize) -> Vec<i32>,
-            /// }
-            ///
-            /// impl_input!( (|size: usize, builder: VecBuilder| (builder.func)(size))(VecBuilder<'a>) -> Vec<i32>, |v: Vec<i32>| v.len());
-            /// let builder: VecBuilder = todo!();
-            /// let input = Vec::<i32>::generate_input(10, builder);
-            /// ```
-            fn generate_input(size: usize, builder: Self::Builder) -> Self {
+            fn generate_input(size: usize, builder: &Self::Builder) -> Self {
                 $generate_input_closure(size, builder)
             }
         }
     };
-}
-
-fn f() {
-    let a = 0u32;
-    let b = a.to_be_bytes().len();
 }
