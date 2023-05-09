@@ -10,7 +10,7 @@
 //! and store it into an [`InputSet`] instance. You can use the InputBuilder as soon as you
 //! have:
 //!
-//! * Figured out which distribution suits your needs (read the [distribution] documention
+//! * Figured out which distribution suits your needs (read the [distribution] documentation
 //! for more infos).
 //! * Created your input type (read the example below).
 //!
@@ -30,6 +30,13 @@
 //! Next, we need to implement the [`Input`] trait for our new type:
 //!
 //! ```
+//! # use rand::Rng;
+//! # use time_complexity_plot::input::Input;
+//!
+//! # pub struct PrimeTestInput {
+//! #    pub number: u32,
+//! # }
+//!
 //! impl Input for PrimeTestInput {
 //!     type Builder = ();
 //!
@@ -44,15 +51,15 @@
 //!         let mut rng = rand::thread_rng();
 //!         PrimeTestInput {
 //!             // We consider the size as the number of bits.
-//!             number: rng.gen_range(2u32.pow(size-1 as u32)..2u32.pow(size as u32)),
+//!             number: rng.gen_range(2u32.pow((size-1) as u32)..2u32.pow(size as u32)),
 //!         }
 //!     }
 //! }
 //! ```
 //!
-//! Now we can use our [`PrimeTestInput`] type to generate inputs for testing our algorithm!
+//! Now we can use our `PrimeTestInput` type to generate inputs for testing our algorithm!
 //!
-//! Note that the input size is taken as an argument by the [`generate_input`] method. If
+//! Note that the input size is taken as an argument by the `generate_input` method. If
 //! you want to know more about the input sizes generation, you can read the documentation
 //! of the [`distribution`] submodule.
 //!
@@ -61,7 +68,7 @@
 //! Now, you may be curious about the [`Builder`](Input::Builder) type.
 //!
 //! The [`Builder`](Input::Builder) type is helpful when you want to choose between different
-//! input generators. In the previus example, we only have needed one generator, so we used ()
+//! input generators. In the previous example, we only have needed one generator, so we used ()
 //! as the [`Builder`](Input::Builder) type. However, if we had more than one generator, we
 //! could define an enum like this:
 //!
@@ -75,6 +82,20 @@
 //! Then, we could use `Generator` as the [`Builder`](Input::Builder) type:
 //!
 //! ```
+//! use time_complexity_plot::input::Input;
+//!
+//! # pub struct PrimeTestInput {
+//! #    pub number: u32,
+//! # }
+//!
+//! # pub enum Generator {
+//! #    Fast,
+//! #    Uniform,
+//! # }
+//!
+//! # fn generate_order_vector_fast(size: usize, min: u32, max: u32) -> PrimeTestInput { todo!() }
+//! # fn generate_order_vector(size: usize, min: u32, max: u32) -> PrimeTestInput { todo!() }
+//!
 //! impl Input for PrimeTestInput {
 //!     type Builder = Generator;
 //!
@@ -94,38 +115,14 @@
 //! }
 //! ```
 //!
+//! ### Using primitive types as input
+//!
 //! If you're new to Rust, you may be wondering why we need to create a new type for the input
 //! when we could just use the `u32` type itself. The reason is that only traits you own can be
 //! implemented for primitive types, and this library owns the [`Input`] trait, not your crate
 //! where you're using this library.
-//!
-//! ## Using primitive types as input
-//! 
-//! TODO: not working yet
-//!
-//! If you need to use a primitive type as input but can't wrap it in a new type, you can use
-//! the [impl_input] macro.
-//! 
-//! The previous example could be rewritten like this:
-//!
-//! ``` 
-//! impl_input!(
-//!     (|size: usize, builder: &Generator| -> u32
-//!         {
-//!             match builder {
-//!                 Generator::Fast => generate_order_vector_fast(size, u32::MIN, u32::MAX),
-//!                 Generator::Uniform => generate_order_vector(size, u32::MIN, u32::MAX),
-//!             }
-//!         })(Generator) -> u32,
-//!     |input: u32| -> usize
-//!         {
-//!             input.to_be_bytes().len() * 8
-//!         }
-//! );
-//! ```
-//! 
-//! The first argument is the type of the input, and the second argument is a closure that
-//! takes the size of the input as argument and returns the input itself.
+//! If you need to use a primitive type as an input you need to create a new wrapper type, for
+//! more information refer to the [rust guide](https://doc.rust-lang.org/rust-by-example/generics/new_types.html)
 
 use serde::Serialize;
 use std::fs::File;
@@ -164,7 +161,7 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
     ///
     /// # Arguments
     ///
-    /// * `distribution` - The distribuition that will be used to generate the input lengths.
+    /// * `distribution` - The distribution that will be used to generate the input lengths.
     /// * `builder` - The builder that will be used to generate the inputs.
     pub fn new(distribution: D, builder: I::Builder) -> InputBuilder<I, D> {
         InputBuilder {
@@ -187,10 +184,10 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
     ///
     /// # Arguments
     ///
-    /// * `n` - The number of inputs to be generated (exluding repetitions: the actual amount of inputs generated is n*repetitions).
+    /// * `n` - The number of inputs to be generated (excluding repetitions: the actual amount of inputs generated is n*repetitions).
     /// * `repetitions` - The number of repetitions for each input size.
     pub fn build_with_repetitions(&self, n: usize, repetitions: usize) -> InputSet<I> {
-        // TODO: remove theese assertions: usually asserts are not used in libraries
+        // TODO: remove these assertions: usually asserts are not used in libraries
         // A better way to handle this would be to return a Result instead of panicking
         assert!(
             n > 0,
@@ -213,13 +210,11 @@ impl<I: Input, D: Distribution> InputBuilder<I, D> {
 
         // Iterate over the input lengths
         for (_j, input_size) in length_distribution.iter().enumerate() {
-
             // Initialize the vec holding the inputs with the same size
             let mut inputs_with_same_size = Vec::with_capacity(repetitions);
 
             // Iterate over the repetitions
             for _ in 0..repetitions {
-
                 // Generate the inputs of the given size and push them to the vec
                 inputs_with_same_size.push(I::generate_input(*input_size, &self.builder));
             }
@@ -259,56 +254,4 @@ impl<I: Input + Serialize> InputSet<I> {
         serde_json::to_writer(&mut file, &self).unwrap();
         // TODO: handle errors instead of panicking maybe returning a Result
     }
-}
-
-/// Implements Input for the given type using the given closure to get the size of the input.
-/// Useful for not having to create a wrapper for built-in data types.
-///
-/// # Syntax
-///
-/// (`$generate_input_closure`)(`$builder`) -> `$input`, `$get_size_closure`
-///
-/// # Arguments
-///
-/// * `$generate_input_closure` - The closure that will be used to generate the input through the builder.
-///     (`|usize, &$builder| -> $input`)
-/// * `$builder` - The type of the builder that will be used to generate the input.
-/// * `$input` - The type to implement [`Input`](Input) for.
-/// * `$get_size_closure` - The closure that will be used to get the size of the input.
-///     (`|$built_in_type| -> usize`)
-///
-/// # Example
-///
-/// ```
-/// use time_complexity_plot::impl_input;
-/// use time_complexity_plot::input::Input;
-///
-///
-/// impl_input!( (|size: usize, builder: ()| -> u32 { 1 })(()) -> u32, |input: u32| -> usize { 1 } );
-/// 
-/// let input = u32::generate_input(10, ());
-/// ```
-#[macro_export] // TODO: this macro seems to be shown in the docs in the wrong path
-macro_rules! impl_input {
-    (($generate_input_closure:expr)($builder:ty) -> $input:ty, $get_size_closure:expr) => {
-        /// Implementation of "Input" for $built_in_type
-        impl $crate::input::Input for $input {
-            type Builder = $builder;
-
-            /// Gets the size of the input.
-            fn get_size(&self) -> usize {
-                $get_size_closure(self.clone())
-            }
-
-            /// Generates an input of the given size using the given builder.
-            ///
-            /// # Arguments
-            ///
-            /// * `size` - The size of the input to be generated.
-            /// * `builder` - The builder that will be used to generate the input (it's basically a function).
-            fn generate_input(size: usize, builder: &Self::Builder) -> Self {
-                $generate_input_closure(size, builder)
-            }
-        }
-    };
 }

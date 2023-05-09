@@ -7,10 +7,8 @@ pub struct SearchInput {
     pub target: u32,
 }
 
-
 // We implement the Input trait for SearchInput.
 impl Input for SearchInput {
-
     // We want to be able to choose between different input generators, so we need a Builder.
     type Builder = Generator;
 
