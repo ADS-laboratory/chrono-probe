@@ -1,7 +1,47 @@
-use crate::input::{Input, InputSet};
-use serde::Serialize;
+//! # Measurements
+//!
+//! This module contains the methods to measure the performance of an algorithm.
+//!
+//! Provides the following functions:
+//!
+//! * `measure`
+//! * `measure_mut`
+//!
+//! Those functions take as input:
+//! * A reference to an [`InputSet`](crate::input::InputSet), which contains the inputs to test the algorithm on.
+//! * A relative error threshold.
+//! * A slice of algorithms to test.
+//!
+//! An [`InputSet`] should be created using an [`InputSet`](crate::input::InputSet), for more information
+//! read the [crate::input] module documentation.\
+//!
+//! Relative error is a float number that can be set to adjust the precision of the measurements.
+//! The smaller the relative error, the more precise the measurements will be, but the longer
+//! it will take to run the tests.\
+//!
+//! Each algorithms must be a function that takes **one** input that implements the [`Input`] trait
+//! and returns **one** output. This means that if your algorithm takes more than one input, you need
+//! to wrap them in a struct and implement the [`Input`] trait for it.
+//! The [`measure`] function take algorithms of type `Fn(&I) -> O` as input, while the [`measure_mut`]
+//! function takes algorithms of type `Fn(&mut I) -> O`. This means that if your algorithm mutate the
+//! input (like a sorting algorithm) you need to use the [`measure_mut`] function, otherwise you can
+//! use the [`measure`] function. If the input of your algorithm is not mutable prefer using the
+//! [`measure`] function, as it is faster and more precise.\
+//!
+//! The output of these functions is a [`Measurements`] struct, which contains the measurements of
+//! each algorithm on each input. Useful methods are provided like [`Measurements::serialize_json`]
+//! to save the measurements to a file or [`Measurements::log_log_scale`] to scale the measurements
+//! to a log-log scale.
+//!
+//! Examples of the use of these two function can be found in the [examples](https://github.com/ADS-laboratory/time-complexity-plot/tree/lib/examples) folder.
+
+
 use std::fs::File;
 use std::time::{Duration, Instant};
+
+use serde::Serialize;
+
+use crate::input::{Input, InputSet};
 
 /// A point containing the size of the input and the time it took to process it
 #[derive(Serialize, Clone)]
@@ -99,7 +139,7 @@ where
 /// * `resolution` - The resolution of the clock
 fn get_time_mut<I, O, Alg>(
     f: Alg,
-    input: &mut I,
+    input: &I,
     relative_error: f32,
     resolution: Duration,
 ) -> Duration
@@ -178,7 +218,7 @@ where
 /// * `resolution` - The resolution of the clock
 fn get_time_same_length_mut<I, O, Alg>(
     f: &Alg,
-    inputs: &mut Vec<I>,
+    inputs: &Vec<I>,
     relative_error: f32,
     resolution: Duration,
 ) -> Point
@@ -244,7 +284,7 @@ where
 /// * `resolution` - The resolution of the clock
 fn get_times_mut<I, O, Alg>(
     f: &Alg,
-    inputs: &mut InputSet<I>,
+    inputs: &InputSet<I>,
     relative_error: f32,
     resolution: Duration,
 ) -> Measurement
@@ -254,7 +294,7 @@ where
 {
     let n = inputs.inputs.len();
     let mut times = Vec::with_capacity(n);
-    for (_i, input) in inputs.inputs.iter_mut().enumerate() {
+    for (_i, input) in inputs.inputs.iter().enumerate() {
         let time = get_time_same_length_mut(f, input, relative_error, resolution);
         times.push(time);
         #[cfg(feature = "debug")]
@@ -317,7 +357,7 @@ where
 /// * `relative_error` - The required relative error of the measurements
 ///
 pub fn measure_mut<I, O, Alg>(
-    inputs: &mut InputSet<I>,
+    inputs: &InputSet<I>,
     algorithms: &[Alg],
     relative_error: f32,
 ) -> Measurements

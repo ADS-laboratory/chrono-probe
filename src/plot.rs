@@ -1,7 +1,8 @@
-use crate::input::distribution::Distribution;
-use crate::input::{Input, InputBuilder};
-use crate::measurements::{Measurements, Point};
 use plotters::prelude::*;
+
+use crate::input::{Input, InputBuilder};
+use crate::input::distribution::Distribution;
+use crate::measurements::{Measurements, Point};
 
 /// Plots the data from the [`Measurements`] using [plotters].
 /// The plot is saved to the file specified by `file_name`, the file created will be an SVG file.
@@ -23,7 +24,7 @@ pub fn time_plot<I: Input, D: Distribution>(
     let y_max = measurements_struct.max_time().as_micros() as u32;
 
     let mut measurements = measurements_struct.measurements;
-    let distribution_name = format!("{}", builder.distribution);
+    let distribution_name = format!("{:?}", builder.distribution);
 
     println!("\nPlotting...\n");
 

@@ -33,11 +33,11 @@
 //! To achieve this goal, we will follow these steps:
 //! * Create a struct representing the custom distribution
 //! * Implement a way of creating an instance of the distribution
-//! * Implement the [`Display`] trait to allow printing the name of your distribution in the plots
+//! * Implement the [`Debug`] trait to allow printing the name of your distribution in the plots
 //! * Implement the [`Distribution`] trait, which specifies how to generate the input sizes
 //!
 //! ```
-//! use std::fmt::Display;
+//! use std::fmt::Debug;
 //!
 //! use time_complexity_plot::input::distribution::*;
 //!
@@ -52,7 +52,7 @@
 //! }
 //!
 //! // By implementing the Display trait, we can print the name of our distribution in the plots
-//! impl Display for Constant {
+//! impl Debug for Constant {
 //!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 //!        write!(f, "Costant")
 //!     }
@@ -79,8 +79,10 @@
 //! provides a basic understanding of how to create a custom distribution and can be used
 //! as a starting point for implementing more complex distributions tailored to your needs.
 
-use rand::{thread_rng, Rng};
-use std::{fmt::Display, ops::RangeInclusive};
+use std::fmt::Debug;
+use std::ops::RangeInclusive;
+
+use rand::{Rng, thread_rng};
 
 // =====================
 // = THE MODULE ITSELF =
@@ -90,10 +92,19 @@ use std::{fmt::Display, ops::RangeInclusive};
 ///
 /// Without implementing lower level mechanisms this trait defines the shared behaviour of a
 /// distribution, i.e. the property of being able to generate the input sizes.
-pub trait Distribution: Display {
+pub trait Distribution: Debug {
     /// Generates a vector of input sizes. The number of input sizes to generate is given as
     /// argument.
     fn generate(&self, n: usize) -> Vec<usize>;
+}
+
+/// This enum defines the possible generation types.
+#[derive(Debug)]
+pub enum GenerationType {
+    /// Generates input in fixed intervals.
+    FixedIntervals,
+    /// Generates input in random intervals.
+    Random,
 }
 
 // ==============================
@@ -102,9 +113,10 @@ pub trait Distribution: Display {
 
 /// The struct representing an uniform distribution.
 ///
-/// Given a range, it generates a vector of equidistant input sizes.
+/// Given a range, it generates a vector of uniform distributed input sizes.
 pub struct Uniform {
     range: RangeInclusive<usize>,
+    gen_type: GenerationType,
 }
 
 impl Uniform {
@@ -115,13 +127,26 @@ impl Uniform {
     /// * `range` - The range of the distribution.
     pub fn new(range: RangeInclusive<usize>) -> Self {
         assert!(!range.is_empty(), "The range must not be empty.");
-        Uniform { range }
+        Uniform {
+            range,
+            gen_type: GenerationType::FixedIntervals,
+        }
+    }
+
+    /// Sets the generation type of the exponential distribution.
+    /// The generation type can be either fixed intervals or random.
+    ///
+    /// # Arguments
+    ///
+    /// * `gen_type` - The generation type.
+    pub fn set_gen_type(&mut self, gen_type: GenerationType) {
+        self.gen_type = gen_type;
     }
 }
 
-impl Display for Uniform {
+impl Debug for Uniform {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Uniform")
+        write!(f, "Uniform, generation type: {:?}", self.gen_type)
     }
 }
 
@@ -146,69 +171,23 @@ impl Distribution for Uniform {
         let mut lengths = Vec::with_capacity(n);
 
         // Computing the step
-        let a = self.range.start();
-        let b = (self.range.end() - self.range.start()) / (n - 1);
+        let a = *self.range.start() as f64;
+        let b = (self.range.end() - self.range.start()) as f64;
 
         // Generating the input sizes using the step
         for i in 0..n {
-            let x = a + b * i;
-            lengths.push(x);
+            let x = match self.gen_type {
+                GenerationType::FixedIntervals => {
+                    i as f64 / (n - 1) as f64
+                }
+                GenerationType::Random => {
+                    thread_rng().gen::<f64>()
+                }
+            };
+            lengths.push((a + b * x) as usize);
         }
 
         // Returning the vector of input sizes
-        lengths
-    }
-}
-
-/// The struct representing a uniform random distribution.
-///
-/// Given a range, it generates a vector of random input sizes (uniform because all input
-/// sizes have an equal probability of appearing in the generated vector).
-pub struct UniformRandom {
-    range: RangeInclusive<usize>,
-}
-
-impl UniformRandom {
-    /// Creates a new uniform random distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `range` - The range of the distribution.
-    pub fn new(range: RangeInclusive<usize>) -> Self {
-        assert!(!range.is_empty(), "The range must not be empty.");
-        UniformRandom { range }
-    }
-}
-
-impl Display for UniformRandom {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Uniform Random")
-    }
-}
-
-impl Distribution for UniformRandom {
-    /// Generates a vector of input sizes using an uniform random distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `n` - The number of input sizes to generate.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use time_complexity_plot::input::distribution::*;
-    ///
-    /// let uniform_random = UniformRandom::new(1..=100);
-    /// let lengths = uniform_random.generate(10);
-    /// println!("{:?}", lengths);
-    fn generate(&self, n: usize) -> Vec<usize> {
-        // Preallocating the vector of input sizes
-        let mut lengths = Vec::with_capacity(n);
-
-        // Generating the input sizes using the functions provided by rand crate
-        for _ in 0..n {
-            lengths.push(thread_rng().gen_range(self.range.clone()));
-        }
         lengths
     }
 }
@@ -219,6 +198,7 @@ impl Distribution for UniformRandom {
 pub struct Exponential {
     range: RangeInclusive<usize>,
     lambda: f64,
+    gen_type: GenerationType,
 }
 
 impl Exponential {
@@ -232,7 +212,8 @@ impl Exponential {
         assert!(!range.is_empty(), "The range must not be empty.");
         let lambda =
             ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
-        Exponential { range, lambda }
+        let gen_type = GenerationType::FixedIntervals;
+        Exponential { range, lambda, gen_type }
     }
 
     /// Sets the &lambda; of the exponential distribution.
@@ -244,11 +225,21 @@ impl Exponential {
         assert!(lambda > 0.0, "Lambda must be grater then zero");
         self.lambda = lambda;
     }
+
+    /// Sets the generation type of the exponential distribution.
+    /// The generation type can be either fixed intervals or random.
+    ///
+    /// # Arguments
+    ///
+    /// * `gen_type` - The new generation type of the exponential distribution.
+    pub fn set_gen_type(&mut self, gen_type: GenerationType) {
+        self.gen_type = gen_type;
+    }
 }
 
-impl Display for Exponential {
+impl Debug for Exponential {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Exponential λ={}", self.lambda)
+        write!(f, "Exponential λ={}, generation type: {:?}", self.lambda, self.gen_type)
     }
 }
 
@@ -274,82 +265,10 @@ impl Distribution for Exponential {
         let mut lengths = Vec::with_capacity(n);
 
         for i in 0..n {
-            let x: f64 = i as f64 / (n - 1) as f64;
-            let exp_x = exp_distribution(
-                x,
-                self.lambda,
-                *self.range.start() as f64,
-                *self.range.end() as f64,
-            );
-            lengths.push(exp_x as usize);
-        }
-        lengths
-    }
-}
-
-/// The struct representing an exponential random distribution.
-///
-/// Given a range, it generates a vector of random input sizes using an exponential
-/// distribution. This means that the probability of appearing  in the output of
-/// a specific input size n will decrease as n increases.
-pub struct ExponentialRandom {
-    range: RangeInclusive<usize>,
-    lambda: f64,
-}
-
-impl ExponentialRandom {
-    /// Creates a new exponential random distribution.
-    /// The mean of the distribution is set to match the mean of the inverse uniform distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `range` - The range of the distribution.
-    pub fn new(range: RangeInclusive<usize>) -> Self {
-        assert!(!range.is_empty(), "The range must not be empty.");
-        let lambda =
-            ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
-        ExponentialRandom { range, lambda }
-    }
-
-    /// Sets the &lambda; of the exponential random distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `lambda` - The new &lambda; of the exponential random distribution.
-    pub fn set_lambda(&mut self, lambda: f64) {
-        assert!(lambda > 0.0, "Lambda must be grater then zero");
-        self.lambda = lambda;
-    }
-}
-
-impl Display for ExponentialRandom {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Exponential Random λ={}", self.lambda)
-    }
-}
-
-impl Distribution for ExponentialRandom {
-    /// Generates a vector of input sizes using an exponential random distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `n` - The number of input sizes to generate.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use time_complexity_plot::input::distribution::*;
-    ///
-    /// let exponential_random = ExponentialRandom::new(1..=100);
-    /// let lengths = exponential_random.generate(10);
-    /// println!("{:?}", lengths);
-    /// ```
-    fn generate(&self, n: usize) -> Vec<usize> {
-        // Preallocating the vector of input sizes
-        let mut lengths = Vec::with_capacity(n);
-
-        for _ in 0..n {
-            let x: f64 = thread_rng().gen::<f64>();
+            let x: f64 = match self.gen_type {
+                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
+                GenerationType::Random => thread_rng().gen::<f64>(),
+            };
             let exp_x = exp_distribution(
                 x,
                 self.lambda,
