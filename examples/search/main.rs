@@ -3,17 +3,18 @@
 //! This example shows how to use the library to measure the time complexity of
 //! searching algorithms in an ordered vector.
 
-mod algorithms;
-mod input;
-
-use crate::algorithms::{binary_search_input, linear_search_input};
-use crate::input::Generator;
-
 use time_complexity_plot::{
     input::{distribution::Uniform, InputBuilder},
     measurements::measure,
     plot::time_plot,
 };
+use time_complexity_plot::plot::PlotConfig;
+
+use crate::algorithms::{binary_search_input, linear_search_input};
+use crate::input::Generator;
+
+mod algorithms;
+mod input;
 
 fn main() {
     // Create a distribution for the length of the vectors
@@ -44,6 +45,11 @@ fn main() {
         )
     }
 
+    let config = PlotConfig::default()
+        .with_builder(&vector_builder)
+        .with_title("Search in an ordered vector")
+        .with_caption("The time plot of searching algorithms in an ordered vector");
+
     // Plot the results
-    time_plot(file_name, results, &vector_builder);
+    time_plot(file_name, results, &config);
 }

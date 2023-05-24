@@ -4,29 +4,93 @@ use crate::input::{Input, InputBuilder};
 use crate::input::distribution::Distribution;
 use crate::measurements::{Measurements, Point};
 
+/// Configuration for plotting.
+///
+pub struct PlotConfig<'a, I: Input, D: Distribution> {
+    title: &'a str,
+    caption: &'a str,
+    builder: Option<&'a InputBuilder<I, D>>,
+    x_label: &'a str,
+    y_label: &'a str,
+}
+
+impl<'a, I: Input, D: Distribution> PlotConfig<'a, I, D> {
+    /// Crate a new [`PlotConfig`].
+    ///
+    /// Prefer using [`PlotConfig::default`] and then setting the desired values.
+    pub fn new(
+        title: &'a str,
+        caption: &'a str,
+        builder: Option<&'a InputBuilder<I, D>>,
+        x_label: &'a str,
+        y_label: &'a str,
+    ) -> PlotConfig<'a, I, D> {
+        PlotConfig {
+            title,
+            caption,
+            builder,
+            x_label,
+            y_label,
+        }
+    }
+
+    /// Sets the builder to be used for the plot.
+    pub fn with_builder(mut self, builder: &'a InputBuilder<I, D>) -> PlotConfig<'a, I, D> {
+        self.builder = Some(builder);
+        self
+    }
+
+    /// Sets the x label for the plot.
+    pub fn with_x_label(mut self, x_label: &'a str) -> PlotConfig<'a, I, D> {
+        self.x_label = x_label;
+        self
+    }
+
+    /// Sets the y label for the plot.
+    pub fn with_y_label(mut self, y_label: &'a str) -> PlotConfig<'a, I, D> {
+        self.y_label = y_label;
+        self
+    }
+
+    /// Sets the title for the plot.
+    pub fn with_title(mut self, title: &'a str) -> PlotConfig<'a, I, D> {
+        self.title = title;
+        self
+    }
+
+    /// Sets the caption for the plot.
+    pub fn with_caption(mut self, caption: &'a str) -> PlotConfig<'a, I, D> {
+        self.caption = caption;
+        self
+    }
+}
+
+impl<'a, I: Input, D: Distribution> Default for PlotConfig<'a, I, D> {
+    fn default() -> PlotConfig<'a, I, D> {
+        PlotConfig::new("Measurements plot", "Caption", None, "Size", "Time")
+    }
+}
+
 /// Plots the data from the [`Measurements`] using [plotters].
 /// The plot is saved to the file specified by `file_name`, the file created will be an SVG file.
 ///
 /// # Arguments
 ///
 /// * `file_name` - The name of the file to save the plot to
-/// * `measurements_struct` - The measurements to plot
+/// * `measurements` - The measurements to plot
 /// * `builder` - The builder that was used to generate the measurements
 ///
 pub fn time_plot<I: Input, D: Distribution>(
     file_name: &str,
-    measurements_struct: Measurements,
-    builder: &InputBuilder<I, D>,
+    measurements: Measurements,
+    config: &PlotConfig<I, D>,
 ) {
-    let x_min = measurements_struct.min_length() as u32;
-    let x_max = measurements_struct.max_length() as u32;
-    let y_min = measurements_struct.min_time().as_micros() as u32;
-    let y_max = measurements_struct.max_time().as_micros() as u32;
+    let x_min = measurements.min_length() as u32;
+    let x_max = measurements.max_length() as u32;
+    let y_min = measurements.min_time().as_micros() as u32;
+    let y_max = measurements.max_time().as_micros() as u32;
 
-    let mut measurements = measurements_struct.measurements;
-    let distribution_name = format!("{:?}", builder.distribution);
-
-    println!("\nPlotting...\n");
+    let mut measurements = measurements.measurements;
 
     // plot setup
     let root = SVGBackend::new(file_name, (1024, 768)).into_drawing_area();
@@ -36,26 +100,28 @@ pub fn time_plot<I: Input, D: Distribution>(
 
     lower
         .titled(
-            &format!("Fractional period time complexity test using {distribution_name} method for string generation"),
+            config.title,
             ("sans-serif", 10).into_font().color(&BLACK.mix(0.5)),
         )
         .unwrap();
 
+    let caption = match config.builder {
+        None => config.caption.to_string(),
+        Some(b) => format!("{}\n{:?}", config.caption, b.distribution),
+    };
+
     let mut chart = ChartBuilder::on(&upper)
-        .caption(
-            "fractional period test",
-            ("sans-serif", (5).percent_height()),
-        )
+        .caption(&caption, ("sans-serif", (5).percent_height()))
         .set_label_area_size(LabelAreaPosition::Left, (8).percent())
         .set_label_area_size(LabelAreaPosition::Bottom, (4).percent())
         .margin((1).percent())
-        .build_cartesian_2d((x_min..x_max).log_scale(), (y_min..y_max).log_scale())
+        .build_cartesian_2d(x_min..x_max, y_min..y_max)
         .unwrap();
 
     chart
         .configure_mesh()
-        .x_desc("size of string")
-        .y_desc("Time")
+        .x_desc(config.x_label)
+        .y_desc(config.y_label)
         .draw()
         .unwrap();
 

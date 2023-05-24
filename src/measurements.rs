@@ -137,9 +137,9 @@ where
 /// * `relative_error` - The required relative error of the measurement
 /// * `resolution` - The resolution of the clock
 fn get_time_mut<I, O, Alg>(f: Alg, input: &I, relative_error: f32, resolution: Duration) -> Duration
-    where
-        I: Input + Clone,
-        Alg: Fn(&mut I) -> O,
+where
+    I: Input + Clone,
+    Alg: Fn(&mut I) -> O,
 {
     let mut n = 0;
     // The minimum time measurable

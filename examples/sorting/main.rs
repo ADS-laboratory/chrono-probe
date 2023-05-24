@@ -2,16 +2,17 @@
 //!
 //! This example shows how to use the library to measure the time complexity of sorting algorithms.
 
-mod algorithms;
-mod input;
-
-use crate::algorithms::{merge_sort_input, quick_sort_input};
-
 use time_complexity_plot::{
     input::{distribution::Exponential, InputBuilder},
     measurements::measure_mut,
     plot::time_plot,
 };
+use time_complexity_plot::plot::PlotConfig;
+
+use crate::algorithms::{merge_sort_input, quick_sort_input};
+
+mod algorithms;
+mod input;
 
 fn main() {
     // Create a distribution for the length of the vectors
@@ -38,5 +39,10 @@ fn main() {
     let file_name = "plotters-doc-data/tick_control.svg";
 
     // Plot the results
-    time_plot(file_name, results, &vector_builder);
+    let config = PlotConfig::default()
+        .with_builder(&vector_builder)
+        .with_title("Sorting algorithms")
+        .with_caption("The time plot of sorting algorithms");
+
+    time_plot(file_name, results, &config);
 }
