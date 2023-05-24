@@ -177,12 +177,8 @@ impl Distribution for Uniform {
         // Generating the input sizes using the step
         for i in 0..n {
             let x = match self.gen_type {
-                GenerationType::FixedIntervals => {
-                    i as f64 / (n - 1) as f64
-                }
-                GenerationType::Random => {
-                    thread_rng().gen::<f64>()
-                }
+                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
+                GenerationType::Random => thread_rng().gen::<f64>(),
             };
             lengths.push((a + b * x) as usize);
         }
@@ -203,7 +199,7 @@ pub struct Exponential {
 
 impl Exponential {
     /// Creates a new exponential distribution.
-    /// The mean of the distribution is set to match the mean of the inverse uniform distribution.
+    /// The mean of the distribution is set to match the mean of the reciprocal distribution.
     ///
     /// # Arguments
     ///
@@ -213,7 +209,11 @@ impl Exponential {
         let lambda =
             ((range.end() / range.start()) as f64).ln() / ((range.end() - range.start()) as f64);
         let gen_type = GenerationType::FixedIntervals;
-        Exponential { range, lambda, gen_type }
+        Exponential {
+            range,
+            lambda,
+            gen_type,
+        }
     }
 
     /// Sets the &lambda; of the exponential distribution.
@@ -239,7 +239,11 @@ impl Exponential {
 
 impl Debug for Exponential {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Exponential λ={}, generation type: {:?}", self.lambda, self.gen_type)
+        write!(
+            f,
+            "Exponential λ={}, generation type: {:?}",
+            self.lambda, self.gen_type
+        )
     }
 }
 
@@ -325,4 +329,77 @@ fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
     }
 
     z / lambda
+}
+
+/// The struct representing a uniform distribution.
+///
+/// Given a range, it generates a vector of input sizes using a uniform distribution.
+pub struct Reciprocal {
+    range: RangeInclusive<usize>,
+    gen_type: GenerationType,
+}
+
+impl Reciprocal {
+    /// Creates a new uniform distribution.
+    ///
+    /// # Arguments
+    ///
+    /// * `range` - The range of the distribution.
+    pub fn new(range: RangeInclusive<usize>) -> Self {
+        assert!(!range.is_empty(), "The range must not be empty.");
+        Reciprocal {
+            range,
+            gen_type: GenerationType::FixedIntervals,
+        }
+    }
+
+    /// Sets the generation type of the reciprocal distribution.
+    /// The generation type can be either fixed intervals or random.
+    ///
+    /// # Arguments
+    ///
+    /// * `gen_type` - The new generation type of the exponential distribution.
+    pub fn set_gen_type(&mut self, gen_type: GenerationType) {
+        self.gen_type = gen_type;
+    }
+}
+
+impl Debug for Reciprocal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Reciprocal, generation type: {:?}", self.gen_type)
+    }
+}
+
+impl Distribution for Reciprocal {
+    /// Generates a vector of input sizes using a reciprocal distribution.
+    ///
+    /// # Arguments
+    ///
+    /// * `n` - The number of input sizes to generate.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use time_complexity_plot::input::distribution::*;
+    ///
+    /// let reciprocal = Reciprocal::new(1..=100);
+    /// let lengths = reciprocal.generate(10);
+    /// println!("{:?}", lengths);
+    /// ```
+    fn generate(&self, n: usize) -> Vec<usize> {
+        assert!(n > 0, "The number of input sizes must be greater than zero");
+        // Preallocating the vector of input sizes
+        let mut lengths = Vec::with_capacity(n);
+
+        for i in 0..n {
+            let x: f64 = match self.gen_type {
+                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
+                GenerationType::Random => thread_rng().gen::<f64>(),
+            };
+            let rec_x = ((self.range.end() - self.range.start()) as f64).powf(x)
+                + *self.range.start() as f64;
+            lengths.push(rec_x as usize);
+        }
+        lengths
+    }
 }
