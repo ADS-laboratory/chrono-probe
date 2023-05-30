@@ -1,4 +1,15 @@
-// todo: change name
+# TODOs
+- [ ] Algorithms name: find a way to display algorithms name in the plot
+- [ ] Statistic analysis: variance / standard deviation, etc.
+- [ ] Documentation:
+    - [ ] Crate and readme
+    - [x] Input / distribution module
+    - [x] Measurments module
+    - [ ] Plot module
+
+
+
+
 # Time complexity plot
 A rust library to plot and estimate the time complexity of algorithms.
 
