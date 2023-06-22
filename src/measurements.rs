@@ -242,6 +242,7 @@ where
 /// * `resolution` - The resolution of the clock
 fn get_times<I, O, Alg>(
     f: &Alg,
+    f_name: &str,
     inputs: &InputSet<I>,
     relative_error: f32,
     resolution: Duration,
@@ -263,7 +264,7 @@ where
         }
     }
     Measurement {
-        algorithm_name: get_algorithm_name(f),
+        algorithm_name: f_name.to_owned(),//get_algorithm_name(f),
         measurement: times,
     }
 }
@@ -278,6 +279,7 @@ where
 /// * `resolution` - The resolution of the clock
 fn get_times_mut<I, O, Alg>(
     f: &Alg,
+    f_name: &str,
     inputs: &InputSet<I>,
     relative_error: f32,
     resolution: Duration,
@@ -299,7 +301,7 @@ where
         }
     }
     Measurement {
-        algorithm_name: get_algorithm_name_mut(f),
+        algorithm_name: f_name.to_owned(),//get_algorithm_name_mut(f),
         measurement: times,
     }
 }
@@ -314,7 +316,7 @@ where
 ///
 pub fn measure<I, O, Alg>(
     inputs: &InputSet<I>,
-    algorithms: &[Alg],
+    algorithms: &[(Alg, &str)],
     relative_error: f32,
 ) -> Measurements
 where
@@ -328,11 +330,11 @@ where
         #[cfg(feature = "debug")]
         println!(
             "\n\nProcessing {} ({}/{})...\n",
-            get_algorithm_name(algorithm),
+            algorithm.1, // Algorithm name
             _i + 1,
             algorithms.len()
         );
-        let measurement = get_times(algorithm, inputs, relative_error, resolution);
+        let measurement = get_times(&algorithm.0, algorithm.1, inputs, relative_error, resolution);
         results.push(measurement);
     }
     Measurements {
@@ -352,7 +354,7 @@ where
 ///
 pub fn measure_mut<I, O, Alg>(
     inputs: &InputSet<I>,
-    algorithms: &[Alg],
+    algorithms: &[(Alg, &str)],
     relative_error: f32,
 ) -> Measurements
 where
@@ -366,11 +368,11 @@ where
         #[cfg(feature = "debug")]
         println!(
             "\n\nProcessing {} ({}/{})...\n",
-            get_algorithm_name_mut(algorithm),
+            algorithm.1, // Algorithm name
             _i + 1,
             algorithms.len()
         );
-        let measurement = get_times_mut(algorithm, inputs, relative_error, resolution);
+        let measurement = get_times_mut(&algorithm.0, algorithm.1, inputs, relative_error, resolution);
         results.push(measurement);
     }
     Measurements {
@@ -514,27 +516,4 @@ impl Measurements {
         let mut file = File::create(filename).unwrap();
         serde_json::to_writer(&mut file, &self).unwrap();
     }
-}
-
-/// Get the algorithm name from the path
-fn get_algorithm_name<Alg, I, O>(_: Alg) -> String
-where
-    Alg: Fn(&I) -> O,
-{
-    let path_name = std::any::type_name::<Alg>();
-    // Remove the module path
-    let name = path_name.split("::").last().unwrap();
-    name.into()
-}
-
-/// Get the algorithm name from the path
-/// This is the mutable version
-fn get_algorithm_name_mut<Alg, I, O>(_: Alg) -> String
-where
-    Alg: Fn(&mut I) -> O,
-{
-    let path_name = std::any::type_name::<Alg>();
-    // Remove the module path
-    let name = path_name.split("::").last().unwrap();
-    name.into()
 }
