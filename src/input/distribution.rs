@@ -99,7 +99,7 @@ pub trait Distribution: Debug {
 }
 
 /// This enum defines the possible generation types.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GenerationType {
     /// Generates input in fixed intervals.
     FixedIntervals,
@@ -114,6 +114,7 @@ pub enum GenerationType {
 /// The struct representing an uniform distribution.
 ///
 /// Given a range, it generates a vector of uniform distributed input sizes.
+#[derive(Clone)]
 pub struct Uniform {
     range: RangeInclusive<usize>,
     gen_type: GenerationType,

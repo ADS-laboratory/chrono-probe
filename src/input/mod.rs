@@ -144,7 +144,9 @@ pub trait Input {
 /// Struct that holds the inputs.
 #[derive(Serialize)]
 pub struct InputSet<I: Input> {
-    pub(crate) inputs: Vec<Vec<I>>,
+    /// The inputs.
+    /// The inputs are grouped by size.
+    pub inputs: Vec<Vec<I>>,
 }
 
 /// Struct used for building an [`InputSet`].
