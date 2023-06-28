@@ -15,6 +15,9 @@
 //! * [`PlotConfig::with_caption`]: Sets the caption for the plot.
 //! * [`PlotConfig::with_scale`]: Sets the scale for the plot.
 
+use std::fmt::{Debug, Formatter};
+use std::time::Duration;
+
 use plotters::prelude::*;
 
 use crate::measurements::{Measurements, Point};
@@ -100,6 +103,49 @@ impl<'a> Default for PlotConfig<'a> {
     }
 }
 
+enum Precision {
+    Nanoseconds,
+    Microseconds,
+    Milliseconds,
+    Seconds,
+}
+
+impl Precision {
+    const MAX_U32: u128 = u32::MAX as u128;
+
+    fn get_precision_u32(duration: Duration) -> Self {
+        if duration.as_nanos() < Self::MAX_U32 {
+            Precision::Nanoseconds
+        } else if duration.as_micros() < Self::MAX_U32 {
+            Precision::Microseconds
+        } else if duration.as_millis() < Self::MAX_U32 {
+            Precision::Milliseconds
+        } else {
+            Precision::Seconds
+        }
+    }
+
+    fn as_u32(&self, duration: Duration) -> u32 {
+        match self {
+            Precision::Nanoseconds => duration.as_nanos() as u32,
+            Precision::Microseconds => duration.as_micros() as u32,
+            Precision::Milliseconds => duration.as_millis() as u32,
+            Precision::Seconds => duration.as_secs() as u32,
+        }
+    }
+}
+
+impl Debug for Precision {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Precision::Nanoseconds => write!(f, "ns"),
+            Precision::Microseconds => write!(f, "μs"),
+            Precision::Milliseconds => write!(f, "ms"),
+            Precision::Seconds => write!(f, "s"),
+        }
+    }
+}
+
 /// Plots the data from the [`Measurements`] using [plotters].
 /// The plot is saved to the file specified by `file_name`, the file created will be an SVG file.
 ///
@@ -112,8 +158,11 @@ impl<'a> Default for PlotConfig<'a> {
 pub fn time_plot(file_name: &str, measurements: Measurements, config: &PlotConfig) {
     let x_min = measurements.min_length() as u32;
     let x_max = measurements.max_length() as u32;
-    let y_min = measurements.min_time().as_micros() as u32;
-    let y_max = measurements.max_time().as_micros() as u32;
+
+    let max_time = measurements.max_time();
+    let y_precision = Precision::get_precision_u32(max_time);
+    let y_min = y_precision.as_u32(measurements.min_time());
+    let y_max = y_precision.as_u32(max_time);
 
     let mut measurements = measurements.measurements;
 
@@ -148,7 +197,7 @@ pub fn time_plot(file_name: &str, measurements: Measurements, config: &PlotConfi
             chart
                 .configure_mesh()
                 .x_desc(config.x_label)
-                .y_desc(config.y_label)
+                .y_desc(format!("{} ({:?})", config.x_label, y_precision))
                 .draw()
                 .unwrap();
 
@@ -163,7 +212,7 @@ pub fn time_plot(file_name: &str, measurements: Measurements, config: &PlotConfi
                             .measurement
                             .iter()
                             .map(|&Point { size, time, .. }| {
-                                (size as u32, time.as_micros() as u32)
+                                (size as u32, y_precision.as_u32(time))
                             }),
                         color.stroke_width(3),
                     ))
@@ -187,7 +236,7 @@ pub fn time_plot(file_name: &str, measurements: Measurements, config: &PlotConfi
             chart
                 .configure_mesh()
                 .x_desc(config.x_label)
-                .y_desc(config.y_label)
+                .y_desc(format!("{} ({:?})", config.x_label, y_precision))
                 .draw()
                 .unwrap();
 
@@ -202,7 +251,7 @@ pub fn time_plot(file_name: &str, measurements: Measurements, config: &PlotConfi
                             .measurement
                             .iter()
                             .map(|&Point { size, time, .. }| {
-                                (size as u32, time.as_micros() as u32)
+                                (size as u32, y_precision.as_u32(time))
                             }),
                         color.stroke_width(3),
                     ))
