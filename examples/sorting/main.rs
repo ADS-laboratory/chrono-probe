@@ -27,7 +27,10 @@ fn main() {
     let mut vectors = vector_builder.build_with_repetitions(200, 10);
 
     // Create a slice of the algorithms we want to measure
-    let algorithms: &[(fn(&mut input::InputVec), &str); 2] = &[(merge_sort_input, "Merge sort"), (quick_sort_input, "Quick sort")];
+    let algorithms: &[(fn(&mut input::InputVec), &str); 2] = &[
+        (merge_sort_input, "Merge sort"),
+        (quick_sort_input, "Quick sort"),
+    ];
 
     // Measure the algorithms on the vectors, given a relative error of 0.001
     let results = measure_mut(&mut vectors, algorithms, 0.001);

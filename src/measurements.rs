@@ -264,7 +264,7 @@ where
         }
     }
     Measurement {
-        algorithm_name: f_name.to_owned(),//get_algorithm_name(f),
+        algorithm_name: f_name.to_owned(), //get_algorithm_name(f),
         measurement: times,
     }
 }
@@ -301,7 +301,7 @@ where
         }
     }
     Measurement {
-        algorithm_name: f_name.to_owned(),//get_algorithm_name_mut(f),
+        algorithm_name: f_name.to_owned(), //get_algorithm_name_mut(f),
         measurement: times,
     }
 }
@@ -334,7 +334,13 @@ where
             _i + 1,
             algorithms.len()
         );
-        let measurement = get_times(&algorithm.0, algorithm.1, inputs, relative_error, resolution);
+        let measurement = get_times(
+            &algorithm.0,
+            algorithm.1,
+            inputs,
+            relative_error,
+            resolution,
+        );
         results.push(measurement);
     }
     Measurements {
@@ -372,7 +378,13 @@ where
             _i + 1,
             algorithms.len()
         );
-        let measurement = get_times_mut(&algorithm.0, algorithm.1, inputs, relative_error, resolution);
+        let measurement = get_times_mut(
+            &algorithm.0,
+            algorithm.1,
+            inputs,
+            relative_error,
+            resolution,
+        );
         results.push(measurement);
     }
     Measurements {

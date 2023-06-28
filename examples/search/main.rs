@@ -29,7 +29,10 @@ fn main() {
     let vectors = vector_builder.build(200);
 
     // Create a slice of the algorithms we want to measure
-    let algorithms: &[(fn(&input::SearchInput) -> Option<usize>, &str); 2] = &[(linear_search_input, "Linear search"), (binary_search_input, "Binary search")];
+    let algorithms: &[(fn(&input::SearchInput) -> Option<usize>, &str); 2] = &[
+        (linear_search_input, "Linear search"),
+        (binary_search_input, "Binary search"),
+    ];
 
     // Measure the algorithms on the vectors, given a relative error of 0.001
     let results = measure(&vectors, algorithms, 0.001);
