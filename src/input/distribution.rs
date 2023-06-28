@@ -416,7 +416,7 @@ impl Debug for Reciprocal {
 
 impl ProbabilityDistribution for Reciprocal {
     fn inverse_cdf(&self, u: f64) -> f64 {
-        (*self.range.end() as f64 / *self.range.start() as f64).powf(u) + *self.range.start() as f64
+        (*self.range.end() as f64 / *self.range.start() as f64).powf(u) * *self.range.start() as f64
     }
 
     fn get_gen_type(&self) -> &GenerationType {
