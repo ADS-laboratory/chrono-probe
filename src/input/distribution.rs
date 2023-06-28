@@ -1,8 +1,9 @@
 //! This module implements an easy way to abstract the generation of input sizes.
 //!
 //! Provides:
-//! 1) A trait that can be used to define your own distribution.
-//! 2) A set of predefined distributions.
+//! 1) A trait that can be used to define your own distribution for input sizes.
+//! 2) A trait that can be used to define your a general probability distribution.
+//! 3) A set of predefined distributions.
 //!
 //! # Examples
 //!
@@ -30,7 +31,13 @@
 //!
 //! In this example we will cover the steps needed to create a custom distribution.
 //! The goal is to generate a vector of input sizes that are all equal to a given constant.
-//! To achieve this goal, we will follow these steps:
+//! To achieve this goal, we will take two different approaches:
+//!
+//! * Implement the [`Distribution`] trait directly
+//! * Implement the [`ProbabilityDistribution`] trait
+//!
+//! ### Implementing the [`Distribution`] trait
+//!
 //! * Create a struct representing the custom distribution
 //! * Implement a way of creating an instance of the distribution
 //! * Implement the [`Debug`] trait to allow printing the name of your distribution in the plots
@@ -74,10 +81,55 @@
 //! println!("{:?}", lengths);
 //! ```
 //!
+//! ### Implementing the [`ProbabilityDistribution`] trait
+//!
+//! Implementing the [`ProbabilityDistribution`] trait is very similar to implementing the
+//! [`Distribution`] trait. The only difference is that this time we only have to implement a way to
+//! generate a single input size form an uniform distribution, and the trait will take care of
+//! implementing the [`Distribution`] trait for us.
+//!
+//! ```
+//! // Same as before
+//!
+//! use std::fmt::Debug;
+//! use time_complexity_plot::input::distribution::*;
+//!
+//! struct Constant {
+//!     k: usize,
+//! }
+//!
+//! impl Constant {
+//!     pub fn new(k: usize) -> Self { Self { k } }
+//! }
+//!
+//! impl Debug for Constant {
+//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//!        write!(f, "Costant")
+//!     }
+//! }
+//!
+//! // This time we implement the ProbabilityDistribution trait
+//! impl ProbabilityDistribution for Constant {
+//!     fn inverse_cdf(&self, _u: f64) -> f64 {
+//!        self.k as f64
+//!     }
+//! }
+//! ```
+//!
+//! For more information on how to implement a the [`ProbabilityDistribution`] trait, see the
+//! documentation of the trait itself.
+//!
 //! Note that this example is deliberately simple. In practice, you may want to generate
 //! input sizes that are more diverse than a constant value. Nevertheless, this example
 //! provides a basic understanding of how to create a custom distribution and can be used
 //! as a starting point for implementing more complex distributions tailored to your needs.
+//!
+//! ### Which approach should I use?
+//!
+//! The approach you should use depends on the complexity of the distribution you want to implement.
+//! If you want to implement a simple distribution, with a simple inverse cumulative distribution,
+//! you can use the [`ProbabilityDistribution`] trait. If you want to implement a more complex
+//! distribution, you should implement the [`Distribution`] trait directly.
 
 use std::fmt::Debug;
 use std::ops::RangeInclusive;
@@ -110,6 +162,52 @@ pub enum GenerationType {
 // ==============================
 // = PREDEFINED IMPLEMENTATIONS =
 // ==============================
+
+/// This trait defines a certain probability distribution. It is used to generate input sizes
+/// according to the distribution.
+///
+/// If a type implements this trait, and the Debug trait, it also implements the Distribution trait.
+/// In this way, the user can easily create a probability distribution and use it to generate input
+/// sizes, without having to implement the Distribution trait.
+///
+pub trait ProbabilityDistribution {
+    /// This function takes a value x in \[0,1] uniformly distributed and returns a value that is
+    /// distributed according to the probability distribution chosen.
+    ///
+    /// This can be done with the [inverse transform sampling method](https://en.wikipedia.org/wiki/Inverse_transform_sampling):
+    /// given a random variable X with cumulative distribution function F, then F<sup>-1</sup>
+    /// <sub>X</sub>(U) follows the same distribution of X, where U is uniformly distributed in \[0,1].
+    fn inverse_cdf(&self, u: f64) -> f64;
+
+    /// Returns the generation type of the distribution.
+    ///
+    /// This is used to determine whether the input sizes should be generated in fixed intervals or
+    /// in random intervals. By default, it returns [`GenerationType::Random`] but it can be
+    /// overridden to return the desired generation type.
+    fn get_gen_type(&self) -> &GenerationType {
+        &GenerationType::Random
+    }
+}
+
+impl<T: ProbabilityDistribution + Debug> Distribution for T {
+    fn generate(&self, n: usize) -> Vec<usize> {
+        assert!(n > 0, "The number of input sizes must be greater than zero");
+        // Preallocating the vector of input sizes
+        let mut lengths = Vec::with_capacity(n);
+
+        for i in 0..n {
+            let u: f64 = match self.get_gen_type() {
+                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
+                GenerationType::Random => thread_rng().gen::<f64>(),
+            };
+
+            let x = self.inverse_cdf(u);
+
+            lengths.push(x as usize);
+        }
+        lengths
+    }
+}
 
 /// The struct representing an uniform distribution.
 ///
@@ -151,41 +249,15 @@ impl Debug for Uniform {
     }
 }
 
-impl Distribution for Uniform {
-    /// Generates a vector of input sizes using an uniform distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `n` - The number of input sizes to generate.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use time_complexity_plot::input::distribution::*;
-    ///
-    /// let uniform = Uniform::new(1..=100);
-    /// let lengths = uniform.generate(10);
-    /// println!("{:?}", lengths);
-    /// ```
-    fn generate(&self, n: usize) -> Vec<usize> {
-        // Preallocating the vector of input sizes
-        let mut lengths = Vec::with_capacity(n);
-
-        // Computing the step
+impl ProbabilityDistribution for Uniform {
+    fn inverse_cdf(&self, u: f64) -> f64 {
         let a = *self.range.start() as f64;
         let b = (self.range.end() - self.range.start()) as f64;
+        a + b * u
+    }
 
-        // Generating the input sizes using the step
-        for i in 0..n {
-            let x = match self.gen_type {
-                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
-                GenerationType::Random => thread_rng().gen::<f64>(),
-            };
-            lengths.push((a + b * x) as usize);
-        }
-
-        // Returning the vector of input sizes
-        lengths
+    fn get_gen_type(&self) -> &GenerationType {
+        &self.gen_type
     }
 }
 
@@ -248,88 +320,59 @@ impl Debug for Exponential {
     }
 }
 
-impl Distribution for Exponential {
-    /// Generates a vector of input sizes using an exponential distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `n` - The number of input sizes to generate.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use time_complexity_plot::input::distribution::*;
-    ///
-    /// let exponential = Exponential::new(1..=100);
-    /// let lengths = exponential.generate(10);
-    /// println!("{:?}", lengths);
-    /// ```
-    fn generate(&self, n: usize) -> Vec<usize> {
-        assert!(n > 0, "The number of input sizes must be greater than zero");
-        // Preallocating the vector of input sizes
-        let mut lengths = Vec::with_capacity(n);
+impl ProbabilityDistribution for Exponential {
+    fn inverse_cdf(&self, u: f64) -> f64 {
+        /*
+        In order to generate an exponential distribution the inverse transform sampling method is
+        used. Given an uniform distributed value u ∈ [0, 1] a linear transformation is applied in
+        order to get e ∈ [F(min), F(max)] where F(x) is the cumulative distribution function of the
+        exponential distribution. The inverse of F(x) is then applied to e in order to get the
+        desired value:
 
-        for i in 0..n {
-            let x: f64 = match self.gen_type {
-                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
-                GenerationType::Random => thread_rng().gen::<f64>(),
-            };
-            let exp_x = exp_distribution(
-                x,
-                self.lambda,
-                *self.range.start() as f64,
-                *self.range.end() as f64,
-            );
-            lengths.push(exp_x as usize);
+        F^-1(x) = -ln(1 - x) / lambda
+
+        Desired value = F^-1(e)
+        */
+
+        let min = *self.range.start() as f64;
+        let max = *self.range.end() as f64;
+        let lambda = self.lambda;
+
+        let x = lambda * min;
+        let y = lambda * max;
+        let z: f64;
+
+        if u == 1.0_f64 {
+            return max;
+        } else if u == 0.0 {
+            return min;
         }
-        lengths
-    }
-}
 
-/// Helper function to generate an exponential distribution.
-// u ∈ [0, 1], lambda > 0, min > 0, max > 0, min < max
-fn exp_distribution(u: f64, lambda: f64, min: f64, max: f64) -> f64 {
-    /*
-    In order to generate an exponential distribution the inverse transform sampling method is used.
-    Given an uniform distributed value u ∈ [0, 1] a linear transformation is applied in order to
-    get e ∈ [F(min), F(max)] where F(x) is the cumulative distribution function of the exponential
-    distribution. The inverse of F(x) is then applied to e in order to get the desired value:
+        /*
+        If the difference between y and x is small enough, we can use the exact formula to compute the
+        desired value.
+         */
+        if y - x < f64::MAX_EXP as f64 * 2.0_f64.ln() {
+            z = y - ((1.0 - u) * (y - x).exp() + u).ln();
+            return z / lambda;
+        }
 
-    F^-1(x) = -ln(1 - x) / lambda
+        /*
+        If the difference between y and x is too big, we use the approximation formula to compute the
+        desired value.
+         */
+        if y - x > (1.0 / (1.0 - u)).ln() {
+            z = x - (1.0 - u).ln();
+        } else {
+            z = y - u.ln();
+        }
 
-    Desired value = F^-1(e)
-     */
-
-    let x = lambda * min;
-    let y = lambda * max;
-    let z: f64;
-
-    if u == 1.0_f64 {
-        return max;
-    } else if u == 0.0 {
-        return min;
+        z / lambda
     }
 
-    /*
-    If the difference between y and x is small enough, we can use the exact formula to compute the
-    desired value.
-     */
-    if y - x < f64::MAX_EXP as f64 * 2.0_f64.ln() {
-        z = y - ((1.0 - u) * (y - x).exp() + u).ln();
-        return z / lambda;
+    fn get_gen_type(&self) -> &GenerationType {
+        &self.gen_type
     }
-
-    /*
-    If the difference between y and x is too big, we use the approximation formula to compute the
-    desired value.
-     */
-    if y - x > (1.0 / (1.0 - u)).ln() {
-        z = x - (1.0 - u).ln();
-    } else {
-        z = y - u.ln();
-    }
-
-    z / lambda
 }
 
 /// The struct representing a uniform distribution.
@@ -371,36 +414,12 @@ impl Debug for Reciprocal {
     }
 }
 
-impl Distribution for Reciprocal {
-    /// Generates a vector of input sizes using a reciprocal distribution.
-    ///
-    /// # Arguments
-    ///
-    /// * `n` - The number of input sizes to generate.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use time_complexity_plot::input::distribution::*;
-    ///
-    /// let reciprocal = Reciprocal::new(1..=100);
-    /// let lengths = reciprocal.generate(10);
-    /// println!("{:?}", lengths);
-    /// ```
-    fn generate(&self, n: usize) -> Vec<usize> {
-        assert!(n > 0, "The number of input sizes must be greater than zero");
-        // Preallocating the vector of input sizes
-        let mut lengths = Vec::with_capacity(n);
+impl ProbabilityDistribution for Reciprocal {
+    fn inverse_cdf(&self, u: f64) -> f64 {
+        (*self.range.end() as f64 / *self.range.start() as f64).powf(u) + *self.range.start() as f64
+    }
 
-        for i in 0..n {
-            let x: f64 = match self.gen_type {
-                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
-                GenerationType::Random => thread_rng().gen::<f64>(),
-            };
-            let rec_x = ((self.range.end() - self.range.start()) as f64).powf(x)
-                + *self.range.start() as f64;
-            lengths.push(rec_x as usize);
-        }
-        lengths
+    fn get_gen_type(&self) -> &GenerationType {
+        &self.gen_type
     }
 }

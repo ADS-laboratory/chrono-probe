@@ -15,7 +15,6 @@
 //! * [`PlotConfig::with_caption`]: Sets the caption for the plot.
 //! * [`PlotConfig::with_scale`]: Sets the scale for the plot.
 
-
 use plotters::prelude::*;
 
 use crate::measurements::{Measurements, Point};

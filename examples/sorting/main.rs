@@ -43,7 +43,6 @@ fn main() {
 
     // Plot the results
     let config = PlotConfig::default()
-        .with_builder(&vector_builder)
         .with_title("Sorting algorithms")
         .with_caption("The time plot of sorting algorithms");
 

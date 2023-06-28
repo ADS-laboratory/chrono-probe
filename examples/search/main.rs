@@ -49,7 +49,6 @@ fn main() {
     }
 
     let config = PlotConfig::default()
-        .with_builder(&vector_builder)
         .with_title("Search in an ordered vector")
         .with_caption("The time plot of searching algorithms in an ordered vector");
 
