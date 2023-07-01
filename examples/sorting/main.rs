@@ -39,7 +39,7 @@ fn main() {
     // Serialize the results to a json file
     result_clone.serialize_json("results.json");
 
-    let file_name = "plotters-doc-data/tick_control.svg";
+    let file_name = "results/tick_control.svg";
 
     // Plot the results
     let config = PlotConfig::default()

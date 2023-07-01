@@ -37,7 +37,7 @@ fn main() {
     // Measure the algorithms on the vectors, given a relative error of 0.001
     let results = measure(&vectors, algorithms, 0.001);
 
-    let file_name = "plotters-doc-data/tick_control.svg";
+    let file_name = "results/tick_control.svg";
 
     // Here we print the linear regression of the log-log scale of the results
     for result in results.clone().measurements {
