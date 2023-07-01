@@ -197,7 +197,13 @@ impl<T: ProbabilityDistribution + Debug> Distribution for T {
 
         for i in 0..n {
             let u: f64 = match self.get_gen_type() {
-                GenerationType::FixedIntervals => i as f64 / (n - 1) as f64,
+                GenerationType::FixedIntervals => {
+                    if n != 1 {
+                        i as f64 / (n - 1) as f64
+                    } else {
+                        0.0
+                    }
+                },
                 GenerationType::Random => thread_rng().gen::<f64>(),
             };
 
@@ -264,6 +270,7 @@ impl ProbabilityDistribution for Uniform {
 /// The struct representing an exponential distribution.
 ///
 /// Given a range, it generates a vector of input sizes using an exponential distribution.
+#[derive(Clone)]
 pub struct Exponential {
     range: RangeInclusive<usize>,
     lambda: f64,
