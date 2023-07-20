@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/ADS-laboratory/chrono-probe.git"
 readme = "README.md"
 authors = ["Danelutti Leonardo", "Della Giustina Lorenzo", "Bortuzzo Francesco"]
-keywords = ["time-complexity", "plot", "algorithm", "measure", "comparison", "benchmark"]
+keywords = ["time-complexity", "plot", "algorithm", "measure", "benchmark"]
 categories = ["algorithms", "plot", "benchmark"]
 
 [features]
