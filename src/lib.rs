@@ -1,6 +1,6 @@
-//! # _Name of the library_
+//! # Chrono-probe
 //!
-//! _Name of the library_ is a library for measuring the time complexity of algorithms.
+//! **Chrono-probe** is a library for measuring the time complexity of algorithms.
 //!
 //! In order to measure the time complexity of an algorithm, you need to provide an algorithm (or
 //! more) and a way to generate inputs for the algorithm. The library will then measure the time
@@ -11,9 +11,9 @@
 //! measure the time complexity of any algorithm, as long as the algorithm can be expressed as a
 //! function that takes an input and returns an output.
 //!
-//! ## How to use _Name of the library_
+//! ## How to use chrono-probe
 //!
-//! In this section, we will show how to use _Name of the library_ to measure the time complexity
+//! In this section, we will show how to use **chrono-probe** to measure the time complexity
 //! of a sorting algorithm. We will use the `quicksort` algorithm as an example. This example and
 //! more can be found in the [examples](https://github.com/ADS-laboratory/time-complexity-plot/tree/lib/examples) folder.
 //!
