@@ -1,16 +1,14 @@
 [package]
-name = "time-complexity-plot"
+name = "chrono-probe"
 version = "0.1.0"
 edition = "2021"
-description = "Compare time complexity of algorithms"
+description = "Compare and measure the time complexity of algorithms"
 license = "MIT"
 repository = "https://github.com/ADS-laboratory/time-complexity-plot.git"
 readme = "README.md"
-authors = ["Danelutti Leonardo", "Della Giustina Lorenzo"]
-keywords = ["time-complexity", "plot", "algorithm"]
-categories = ["algorithms", "plot"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Danelutti Leonardo", "Della Giustina Lorenzo", "Bortuzzo Francesco"]
+keywords = ["time-complexity", "plot", "algorithm", "measure", "comparison", "benchmark"]
+categories = ["algorithms", "plot", "benchmark"]
 
 [features]
 debug = []
