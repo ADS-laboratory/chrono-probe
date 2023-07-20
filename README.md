@@ -15,7 +15,7 @@ function that takes an input and returns an output.
 
 In this section, we will show how to use **chrono-probe** to measure the time complexity
 of a sorting algorithm. We will use the `quicksort` algorithm as an example. This example and
-more can be found in the [examples'](https://github.com/ADS-laboratory/time-complexity-plot/tree/lib/examples) folder.
+more can be found in the [examples'](https://github.com/ADS-laboratory/chrono-probe/tree/lib/examples) folder.
 
 The implementation of the quicksort algorithm is not important for this example, the definition
 would look something like this:
@@ -146,7 +146,7 @@ time_plot(file_name, results, & config);
 ```
 
 The entire code and other examples can be found in
-the [examples'](https://github.com/ADS-laboratory/time-complexity-plot/tree/lib/examples) folder.
+the [examples'](https://github.com/ADS-laboratory/chrono-probe/tree/lib/examples) folder.
 
 ### Install Rust
 
