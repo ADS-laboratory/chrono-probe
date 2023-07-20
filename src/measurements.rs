@@ -33,7 +33,7 @@
 //! to save the measurements to a file or [`Measurements::log_log_scale`] to scale the measurements
 //! to a log-log scale.
 //!
-//! Examples of the use of these two function can be found in the [examples](https://github.com/ADS-laboratory/time-complexity-plot/tree/lib/examples) folder.
+//! Examples of the use of these two function can be found in the [examples](https://github.com/ADS-laboratory/chrono-probe/tree/lib/examples) folder.
 
 use std::fs::File;
 use std::time::{Duration, Instant};
