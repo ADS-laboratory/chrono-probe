@@ -1,1 +1,1 @@
-# Results are pushed to this folder
+# Results are saved in this folder

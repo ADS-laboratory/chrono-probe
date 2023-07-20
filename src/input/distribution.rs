@@ -203,7 +203,7 @@ impl<T: ProbabilityDistribution + Debug> Distribution for T {
                     } else {
                         0.0
                     }
-                },
+                }
                 GenerationType::Random => thread_rng().gen::<f64>(),
             };
 
