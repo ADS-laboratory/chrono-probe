@@ -3,12 +3,12 @@
 //! This example shows how to use the library to measure the time complexity of
 //! searching algorithms in an ordered vector.
 
-use time_complexity_plot::{
+use chrono_probe::{
     input::{distribution::Uniform, InputBuilder},
     measurements::measure,
     plot::time_plot,
 };
-use time_complexity_plot::plot::PlotConfig;
+use chrono_probe::plot::PlotConfig;
 
 use crate::algorithms::{binary_search_input, linear_search_input};
 use crate::input::Generator;

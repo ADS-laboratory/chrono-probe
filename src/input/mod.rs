@@ -31,7 +31,7 @@
 //!
 //! ```
 //! # use rand::Rng;
-//! # use time_complexity_plot::input::Input;
+//! # use chrono_probe::input::Input;
 //!
 //! # pub struct PrimeTestInput {
 //! #    pub number: u32,
@@ -82,7 +82,7 @@
 //! Then, we could use `Generator` as the [`Builder`](Input::Builder) type:
 //!
 //! ```
-//! use time_complexity_plot::input::Input;
+//! use chrono_probe::input::Input;
 //!
 //! # pub struct PrimeTestInput {
 //! #    pub number: u32,
@@ -124,8 +124,9 @@
 //! If you need to use a primitive type as an input you need to create a new wrapper type, for
 //! more information refer to the [rust guide](https://doc.rust-lang.org/rust-by-example/generics/new_types.html)
 
-use serde::Serialize;
 use std::fs::File;
+
+use serde::Serialize;
 
 use self::distribution::Distribution;
 

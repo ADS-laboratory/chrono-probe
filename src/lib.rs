@@ -19,7 +19,7 @@
 //!
 //! The implementation of the quicksort algorithm is not important for this example, the definition
 //! would look something like this:
-//! ```rust
+//! ```ignore
 //! fn quick_sort<T: Ord + Clone>(v: &mut [T]) {
 //!    // ...
 //! }
@@ -30,7 +30,7 @@
 //! a vector of u32. This is done because rust does not allow us to implement traits for types
 //! defined in other crates and we need to implement the [Input]() trait for our type.
 //!
-//! ```rust
+//! ```ignore
 //! #[derive(Clone)]
 //! pub struct InputVec(Vec<u32>);
 //! ```
@@ -38,7 +38,7 @@
 //! We can also implement `Deref` and `DerefMut` for InputVec, so that we can use it as a `Vec<u32>`.
 //! This is not necessary, but it makes it easier to use.
 //!
-//! ```rust
+//! ```ignore
 //! impl Deref for InputVec {
 //!     type Target = Vec<u32>;
 //!
@@ -55,7 +55,7 @@
 //! ```
 //!
 //! Now we can define the quicksort algorithm as a function that takes an InputVec.
-//! ```rust
+//! ```ignore
 //! fn quick_sort_measure(v: &mut InputVec) {
 //!    quick_sort(v);
 //! }
@@ -66,7 +66,7 @@
 //! between different input generators, so we don't need a Builder, for more information on how to
 //! use Builders see the documentation for the [input::Input] trait.
 //!
-//! ```rust
+//! ```ignore
 //! impl Input for InputVec {
 //!    // We don't need a Builder.
 //!     type Builder = ();
@@ -96,7 +96,7 @@
 //! distribution with a minimum of 1000 and a maximum of 500_000. So all the vectors will have a
 //! length between 1000 and 500_000 and the length will be chosen uniformly at random.
 //!
-//! ```rust
+//! ```ignore
 //! let length_distribution = Linear::new(1000..=500_000);
 //! ```
 //!
@@ -104,13 +104,13 @@
 //! vectors, we only need to specify the distribution for the length of the vectors and because
 //! we don't need a Builder for the InputVec, we can use `()` as the Builder.
 //!
-//! ```rust
+//! ```ignore
 //! let vector_builder = InputBuilder::new(length_distribution, ());
 //! ```
 //!
 //! Now we can build the vectors. Here we build 200 vectors, 10 of each length.
 //!
-//! ```rust
+//! ```ignore
 //! let mut vectors = vector_builder.build_with_repetitions(200, 10);
 //! ```
 //!
@@ -120,7 +120,7 @@
 //! given relative error. We use the [`measurements::measure_mut`] function because the algorithm takes a mutable
 //! reference to the input.
 //!
-//! ```rust
+//! ```ignore
 //! // Create a slice of the algorithms we want to measure
 //! let algorithms: &[(fn(&mut input::InputVec), &str); 1] = &[
 //!  (quick_sort_input, "Quick sort"),
@@ -136,7 +136,7 @@
 //!
 //! Results can be plotted using the [`plot::time_plot`] function.
 //!
-//! ```rust
+//! ```ignore
 //! // Plot the results
 //! let config = PlotConfig::default()
 //!     .with_title("Sorting algorithms")

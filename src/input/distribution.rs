@@ -15,7 +15,7 @@
 //! sizes. In this specific case, we use the [`Uniform`] distribution as an example.
 //!
 //! ```
-//! use time_complexity_plot::input::distribution::*;
+//! use chrono_probe::input::distribution::*;
 //!
 //! // First, we create an instance of the Uniform distribution
 //! let uniform = Uniform::new(1..=100);
@@ -46,7 +46,7 @@
 //! ```
 //! use std::fmt::Debug;
 //!
-//! use time_complexity_plot::input::distribution::*;
+//! use chrono_probe::input::distribution::*;
 //!
 //! // First, we create the struct representing the custom distribution
 //! struct Constant {
@@ -92,7 +92,7 @@
 //! // Same as before
 //!
 //! use std::fmt::Debug;
-//! use time_complexity_plot::input::distribution::*;
+//! use chrono_probe::input::distribution::*;
 //!
 //! struct Constant {
 //!     k: usize,

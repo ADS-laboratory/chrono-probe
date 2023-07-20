@@ -1,5 +1,6 @@
 use rand::Rng;
-use time_complexity_plot::input::Input;
+
+use chrono_probe::input::Input;
 
 // Here we define a new Input type. A searching algorithm needs a vector and a target.
 pub struct SearchInput {

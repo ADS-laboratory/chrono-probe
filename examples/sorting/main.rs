@@ -2,12 +2,12 @@
 //!
 //! This example shows how to use the library to measure the time complexity of sorting algorithms.
 
-use time_complexity_plot::{
+use chrono_probe::{
     input::{distribution::Exponential, InputBuilder},
     measurements::measure_mut,
     plot::time_plot,
 };
-use time_complexity_plot::plot::PlotConfig;
+use chrono_probe::plot::PlotConfig;
 
 use crate::algorithms::{merge_sort_input, quick_sort_input};
 

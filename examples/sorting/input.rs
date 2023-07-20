@@ -1,7 +1,9 @@
 use core::ops::{Deref, DerefMut};
-use rand::thread_rng;
+
 use rand::Rng;
-use time_complexity_plot::input::Input;
+use rand::thread_rng;
+
+use chrono_probe::input::Input;
 
 // Here we define a new Input type, which is a vector of u32.
 
